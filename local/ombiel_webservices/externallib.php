@@ -2434,7 +2434,7 @@ class local_ombiel_webservices extends external_api {
      */
     public static function  user_choice_response($optionid, $coursemoduleid) {
         global $CFG, $DB, $USER;
-
+        
         $params = self::validate_parameters(self::user_choice_response_parameters(), array('optionid' => $optionid,
             'coursemoduleid' => $coursemoduleid));
         require_once($CFG->dirroot . '/mod/choice/lib.php');

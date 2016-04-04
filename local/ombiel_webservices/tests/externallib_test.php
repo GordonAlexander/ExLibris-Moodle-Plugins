@@ -2701,11 +2701,14 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         );
         $choiceinstance1 = $this->choice_generator($options);
 
+        next($choiceinstance1->option);
+        $optionid = key($choiceinstance1->option);
+
         if ($CFG->version >= 2014051200) { // Moodle 2.7
             $sink = $this->redirectEvents();
         }
 
-        $results = local_ombiel_webservices::user_choice_response(1, $choiceinstance1->cmid);
+        $results = local_ombiel_webservices::user_choice_response($optionid, $choiceinstance1->cmid);
         $results = external_api::clean_returnvalue(local_ombiel_webservices::user_choice_response_returns(), $results);
 
         if ($CFG->version >= 2014051200) { // Moodle 2.7
@@ -2732,7 +2735,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $this->assertEquals(1, count($answers));
         $answer = current($answers);
         $this->assertEquals($user1->id, $answer->userid);
-        $this->assertEquals(1, $answer->optionid);
+        $this->assertEquals($optionid, $answer->optionid);
 
         /**
          * cm is a choice - user is not enrolled
