@@ -969,31 +969,37 @@ class local_ombiel_webservices extends external_api {
 
         $submission = $assign->get_user_submission($USER->id, true);
 
-        if (empty($submission) or empty($submission->status)) {
+        if (empty($submission)) {
             $assignout['submissionstatus'] = 'new';
         } else {
-            $assignout['submissionstatus'] = $submission->status;
-        }
+            if (empty($submission->status)) {
+              $assignout['submissionstatus'] = 'new';
+            } else {
+              $assignout['submissionstatus'] = $submission->status;
+            }
 
-        $onlinetextplugin = $assign->get_submission_plugin_by_type('onlinetext');
-        $onlinetext = $onlinetextplugin->view($submission);
+            if ($DB->get_record('assignsubmission_onlinetext', array('submission'=>$submission->id))) {
 
-        if (!empty($onlinetext)) {
-            $assignout['onlinesubmission'] = str_replace($CFG->wwwroot.'/pluginfile.php',$CFG->wwwroot.'/webservice/pluginfile.php',$onlinetext);
-        }
+                $onlinetextplugin = $assign->get_submission_plugin_by_type('onlinetext');
+                $onlinetext = $onlinetextplugin->view($submission);
 
-        $files = new assign_files($context, $submission->id, ASSIGNSUBMISSION_FILE_FILEAREA, 'assignsubmission_file');
+                if (!empty($onlinetext)) {
+                    $assignout['onlinesubmission'] = str_replace($CFG->wwwroot.'/pluginfile.php',$CFG->wwwroot.'/webservice/pluginfile.php',$onlinetext);
+                }
+            }
 
+            $files = new assign_files($context, $submission->id, ASSIGNSUBMISSION_FILE_FILEAREA, 'assignsubmission_file');
 
-        if (!empty($files->dir['files'])) {
-            $assignout['filesubmissions'] = array();
-            foreach ($files->dir['files'] as $filedescription) {
-                $title = strip_tags($filedescription->fileurl);
-                $anchor = new SimpleXMLElement($filedescription->fileurl);
-                $href = str_replace($CFG->wwwroot.'/pluginfile.php',$CFG->wwwroot.'/webservice/pluginfile.php',(string) $anchor['href']);
-                $parsedurl = parse_url($href);
-                $name = basename($parsedurl['path']);
-                $assignout['filesubmissions'][] = array('link'=>$href,'name'=>$name,'title'=>$title);
+            if (!empty($files->dir['files'])) {
+                $assignout['filesubmissions'] = array();
+                foreach ($files->dir['files'] as $filedescription) {
+                    $title = strip_tags($filedescription->fileurl);
+                    $anchor = new SimpleXMLElement($filedescription->fileurl);
+                    $href = str_replace($CFG->wwwroot.'/pluginfile.php',$CFG->wwwroot.'/webservice/pluginfile.php',(string) $anchor['href']);
+                    $parsedurl = parse_url($href);
+                    $name = basename($parsedurl['path']);
+                    $assignout['filesubmissions'][] = array('link'=>$href,'name'=>$name,'title'=>$title);
+                }
             }
         }
 
@@ -1783,6 +1789,7 @@ class local_ombiel_webservices extends external_api {
             $discussion->groupid = empty($groupid)?-1:$groupid;
             $discussion->timestart = 0;
             $discussion->timeend = 0;
+            $discussion->pinned = FORUM_DISCUSSION_UNPINNED;
             $message = '';
 
             if ($discussion->id = forum_add_discussion($discussion, null, $message)) {
@@ -2434,7 +2441,7 @@ class local_ombiel_webservices extends external_api {
      */
     public static function  user_choice_response($optionid, $coursemoduleid) {
         global $CFG, $DB, $USER;
-        
+
         $params = self::validate_parameters(self::user_choice_response_parameters(), array('optionid' => $optionid,
             'coursemoduleid' => $coursemoduleid));
         require_once($CFG->dirroot . '/mod/choice/lib.php');
