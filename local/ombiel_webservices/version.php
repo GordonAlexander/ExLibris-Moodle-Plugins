@@ -11,6 +11,6 @@
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version  = 2016062101;   // The (date) version of this plugin
+$plugin->version  = 2016071801;   // The (date) version of this plugin
 $plugin->requires = 2013051400;   // Requires this Moodle version.
 $plugin->component = 'local_ombiel_webservices';  // Full name of the plugin (used for diagnostics)
