@@ -488,6 +488,11 @@ class local_ombiel_webservices extends external_api {
                                 $module['contents'][0]['type'] = 'panopto';
                                 $module['contents'][0]['content'] = urlencode(mod_panopto_get_full_panopto($instance, $cm, $course));
                                 $module['contents'][0]['timemodified'] = $instance->timemodified;
+                            } elseif($cm->modname == 'equella') {
+                                require_once($CFG->dirroot . '/mod/equella/common/lib.php');
+                                $module['contents'][0]['type'] = 'equella';
+                                $module['contents'][0]['content'] = urlencode(equella_appendtoken($instance->url));
+                                $module['contents'][0]['timemodified'] = $instance->timemodified;                              
                             } else {
                                 require_once($CFG->dirroot . '/mod/' . $cm->modname . '/lib.php');
                                 $getcontentfunction = $cm->modname . '_export_contents';
