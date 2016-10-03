@@ -52,44 +52,38 @@ if (isloggedin() and !isguestuser())  {
 
     // Validate that token not expired
     if (!empty($tokenRecord->validuntil) and $tokenRecord->validuntil < time()) {
-        if ($CFG->version < 2014051200) {  # Moodle 2.7
-            add_to_log(SITEID, 'webservice', get_string('tokenauthlog', 'webservice'), '', get_string('invalidtimedtoken', 'webservice'), 0);
-            $DB->delete_records('external_tokens', array('token' => $tokenRecord->token));
-        } else {
-            $params = array(
-                'other' => array(
-                    'method' => WEBSERVICE_AUTHMETHOD_PERMANENT_TOKEN,
-                    'reason' => 'token_expired',
-                    'tokenid' => $tokenRecord->id
-                )
-            );
-            $event = \core\event\webservice_login_failed::create($params);
-            $event->add_record_snapshot('external_tokens', $tokenRecord);
-            $event->set_legacy_logdata(array(SITEID, 'webservice', get_string('tokenauthlog', 'webservice'), '',
-                get_string('invalidtimedtoken', 'webservice'), 0));
-            $event->trigger();
-        }
+
+        $params = array(
+            'other' => array(
+                'method' => WEBSERVICE_AUTHMETHOD_PERMANENT_TOKEN,
+                'reason' => 'token_expired',
+                'tokenid' => $tokenRecord->id
+            )
+        );
+        $event = \core\event\webservice_login_failed::create($params);
+        $event->add_record_snapshot('external_tokens', $tokenRecord);
+        $event->set_legacy_logdata(array(SITEID, 'webservice', get_string('tokenauthlog', 'webservice'), '',
+            get_string('invalidtimedtoken', 'webservice'), 0));
+        $event->trigger();
         // Don't error - could have legitimately expired
         redirect(get_login_url());
     }
     // Check ip
     if ($tokenRecord->iprestriction and !address_in_subnet(getremoteaddr(), $tokenRecord->iprestriction)) {
-        if ($CFG->version < 2014051200) {  # Moodle 2.7
-            add_to_log(SITEID, 'webservice', get_string('tokenauthlog', 'webservice'), '', get_string('failedtolog', 'webservice') . ": " . getremoteaddr(), 0);
-        } else {
-            $params = array(
-                'other' => array(
-                    'method' => WEBSERVICE_AUTHMETHOD_PERMANENT_TOKEN,
-                    'reason' => 'ip_restricted',
-                    'tokenid' => $tokenRecord->id
-                )
-            );
-            $event = \core\event\webservice_login_failed::create($params);
-            $event->add_record_snapshot('external_tokens', $tokenRecord);
-            $event->set_legacy_logdata(array(SITEID, 'webservice', get_string('tokenauthlog', 'webservice'), '',
-                get_string('failedtolog', 'webservice') . ": " . getremoteaddr(), 0));
-            $event->trigger();
-        }
+
+        $params = array(
+            'other' => array(
+                'method' => WEBSERVICE_AUTHMETHOD_PERMANENT_TOKEN,
+                'reason' => 'ip_restricted',
+                'tokenid' => $tokenRecord->id
+            )
+        );
+        $event = \core\event\webservice_login_failed::create($params);
+        $event->add_record_snapshot('external_tokens', $tokenRecord);
+        $event->set_legacy_logdata(array(SITEID, 'webservice', get_string('tokenauthlog', 'webservice'), '',
+            get_string('failedtolog', 'webservice') . ": " . getremoteaddr(), 0));
+        $event->trigger();
+
         redirect(get_login_url());
     }
 
@@ -99,37 +93,25 @@ if (isloggedin() and !isguestuser())  {
     enrol_check_plugins($user);
 
     // setup user session to check capability
-    if ($CFG->version < 2013111800) { # Moodle 2.6
-        session_set_user($user);
-    } else {
-        \core\session\manager::set_user($user);
-    }
+    \core\session\manager::set_user($user);
+
 
     if (is_siteadmin($user))  {
         $DB->delete_records('external_tokens', array('sid' => $tokenRecord->sid));
-        if ($CFG->version < 2013111800) { # Moodle 2.6
-            session_get_instance()->terminate_current();
-        } else {
-            \core\session\manager::terminate_current();
-        }
+        \core\session\manager::terminate_current();
         redirect($CFG->wwwroot);
     }
 
     if (!has_capability('local/ombiel_webservices:allowtokenlogin', $context)){
-        if ($CFG->version < 2013111800) { # Moodle 2.6
-            session_get_instance()->terminate_current();
-        } else {
-            \core\session\manager::terminate_current();
-        }
+        \core\session\manager::terminate_current();
         redirect($CFG->wwwroot);
     }
 
-    //assumes that if sid is set then there must be a valid associated session no matter the token type
+    //assumes that if sid is set then there must be a valid associated session no matter the token type       
     if ($tokenRecord->sid) {
-        $session = session_get_instance();
-        if (!$session->session_exists($tokenRecord->sid)) {
+        if (!\core\session\manager::session_exists($tokenRecord->sid)) {
             $DB->delete_records('external_tokens', array('sid' => $tokenRecord->sid));
-            print_error('invalidtoken', 'webservice');
+            throw new webservice_access_exception('Invalid session based token - session not found or expired');
         }
     }
 
@@ -147,11 +129,7 @@ if (isloggedin() and !isguestuser())  {
 
     //check if there is any required system capability
     if ($service->requiredcapability and !has_capability($service->requiredcapability, context_system::instance(), $user)) {
-        if ($CFG->version < 2013111800) { # Moodle 2.6
-            session_get_instance()->terminate_current();
-        } else {
-            \core\session\manager::terminate_current();
-        }
+        \core\session\manager::terminate_current();
         redirect($CFG->wwwroot);
     }
 
@@ -160,29 +138,17 @@ if (isloggedin() and !isguestuser())  {
         $authoriseduser = $DB->get_record('external_services_users', array('externalserviceid' => $service->id, 'userid' => $user->id));
 
         if (empty($authoriseduser)) {
-            if ($CFG->version < 2013111800) { # Moodle 2.6
-                session_get_instance()->terminate_current();
-            } else {
-                \core\session\manager::terminate_current();
-            }
+            \core\session\manager::terminate_current();
             redirect($CFG->wwwroot);
         }
 
         if (!empty($authoriseduser->validuntil) and $authoriseduser->validuntil < time()) {
-            if ($CFG->version < 2013111800) { # Moodle 2.6
-                session_get_instance()->terminate_current();
-            } else {
-                \core\session\manager::terminate_current();
-            }
+            \core\session\manager::terminate_current();
             redirect($CFG->wwwroot);
         }
 
         if (!empty($authoriseduser->iprestriction) and !address_in_subnet(getremoteaddr(), $authoriseduser->iprestriction)) {
-            if ($CFG->version < 2013111800) { # Moodle 2.6
-                session_get_instance()->terminate_current();
-            } else {
-                \core\session\manager::terminate_current();
-            }
+            \core\session\manager::terminate_current();
             redirect($CFG->wwwroot);
         }
     }
@@ -190,49 +156,42 @@ if (isloggedin() and !isguestuser())  {
     //only confirmed user should be able to call web service
     if (empty($user->confirmed)) {
         $DB->delete_records('external_tokens', array('token' => $tokenRecord->token));
-        if ($CFG->version < 2014051200) {  # Moodle 2.7
-            add_to_log(SITEID, 'webservice', 'user unconfirmed', '', $user->username);
-        } else {
-            $failurereason = AUTH_LOGIN_FAILED;
-            // Trigger login failed event.
-            $event = \core\event\user_login_failed::create(array('userid' => $user->id,
-                    'other' => array('username' => $user->username, 'reason' => $failurereason)));
-            $event->trigger();
-            error_log('[client '.getremoteaddr()."]  $CFG->wwwroot  Unconfirmed Login:  $user->username  ".$_SERVER['HTTP_USER_AGENT']);
-        }
+
+        $failurereason = AUTH_LOGIN_FAILED;
+        // Trigger login failed event.
+        $event = \core\event\user_login_failed::create(array('userid' => $user->id,
+                'other' => array('username' => $user->username, 'reason' => $failurereason)));
+        $event->trigger();
+        error_log('[client '.getremoteaddr()."]  $CFG->wwwroot  Unconfirmed Login:  $user->username  ".$_SERVER['HTTP_USER_AGENT']);
+
         print_error('invalidtoken', 'webservice');
     }
 
     //check the user is not suspended
     if (!empty($user->suspended)) {
         $DB->delete_records('external_tokens', array('token' => $tokenRecord->token));
-        if ($CFG->version < 2014051200) {  # Moodle 2.7
-            add_to_log(SITEID, 'webservice', 'user suspended', '', $user->username);
-        } else {
-            $failurereason = AUTH_LOGIN_SUSPENDED;
-            // Trigger login failed event.
-            $event = \core\event\user_login_failed::create(array('userid' => $user->id,
-                    'other' => array('username' => $user->username, 'reason' => $failurereason)));
-            $event->trigger();
-            error_log('[client '.getremoteaddr()."]  $CFG->wwwroot  Suspended Login:  $user->username  ".$_SERVER['HTTP_USER_AGENT']);
-        }
+
+        $failurereason = AUTH_LOGIN_SUSPENDED;
+        // Trigger login failed event.
+        $event = \core\event\user_login_failed::create(array('userid' => $user->id,
+                'other' => array('username' => $user->username, 'reason' => $failurereason)));
+        $event->trigger();
+        error_log('[client '.getremoteaddr()."]  $CFG->wwwroot  Suspended Login:  $user->username  ".$_SERVER['HTTP_USER_AGENT']);
+
         print_error('invalidtoken', 'webservice');
     }
 
     //check if the auth method is nologin (in this case refuse connection)
     if ($user->auth == 'nologin') {
         $DB->delete_records('external_tokens', array('token' => $tokenRecord->token));
-        if ($CFG->version < 2014051200) {  # Moodle 2.7
-            add_to_log(SITEID, 'webservice', 'nologin auth attempt with web service', '', $user->username);
-        } else {
-            $failurereason = AUTH_LOGIN_FAILED;
-            // Trigger login failed event.
-            $event = \core\event\user_login_failed::create(array('userid' => $user->id,
-                    'other' => array('username' => $user->username, 'reason' => $failurereason)));
-            $event->trigger();
-            error_log('[client '.getremoteaddr()."]  $CFG->wwwroot  Nologin Login:  $user->username  ".$_SERVER['HTTP_USER_AGENT']);
 
-        }
+        $failurereason = AUTH_LOGIN_FAILED;
+        // Trigger login failed event.
+        $event = \core\event\user_login_failed::create(array('userid' => $user->id,
+                'other' => array('username' => $user->username, 'reason' => $failurereason)));
+        $event->trigger();
+        error_log('[client '.getremoteaddr()."]  $CFG->wwwroot  Nologin Login:  $user->username  ".$_SERVER['HTTP_USER_AGENT']);
+
         print_error('invalidtoken', 'webservice');
     }
 

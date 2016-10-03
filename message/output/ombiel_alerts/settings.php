@@ -32,7 +32,7 @@ if ($ADMIN->fulltree) {
             get_string('ombielalertsserverusername', 'message_ombiel_alerts'), 
             get_string('configombielalertsserverusername', 'message_ombiel_alerts'), 
             '', 
-            PARAM_RAW
+            PARAM_TEXT
             )
     );
     $settings->add(new admin_setting_configpasswordunmask(
@@ -48,7 +48,7 @@ if ($ADMIN->fulltree) {
             get_string('ombielalertsorgcode', 'message_ombiel_alerts'), 
             get_string('configombielalertsorgcode', 'message_ombiel_alerts'), 
             '', 
-            PARAM_RAW
+            PARAM_INT
             )
     );
     $settings->add(new admin_setting_configpasswordunmask(

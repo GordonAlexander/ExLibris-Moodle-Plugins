@@ -24,11 +24,9 @@ if (!$CFG->enablewebservices) {
     throw new moodle_exception('enablewsdescription', 'webservice');
 }
 
-if ($CFG->version < 2014111000) { // Moodle 2.8
-    $username = trim(textlib::strtolower($username));
-} else {
-    $username = trim(core_text::strtolower($username));
-}
+
+$username = trim(core_text::strtolower($username));
+
 
 
 if (is_restored_user($username)) {
@@ -83,11 +81,7 @@ if (!empty($user)) {
     enrol_check_plugins($user);
 
     // setup user session to check capability
-    if ($CFG->version < 2013111800) { # Moodle 2.6
-        session_set_user($user);
-    } else {
-        \core\session\manager::set_user($user);
-    }
+    \core\session\manager::set_user($user);
 
     //check if the service exists and is enabled
     $service = $DB->get_record('external_services', array('shortname' => $serviceshortname, 'enabled' => 1));
@@ -171,14 +165,10 @@ if (!empty($user)) {
         }
     }
 
-    if ($CFG->version < 2014051200) {  # Moodle 2.7
-        add_to_log(SITEID, 'webservice', 'sending requested user token', '', 'User ID: ' . $user->id);
-    } else {
-        $params = array(
-            'objectid' => $token->id,
-        );
-        $event = \core\event\webservice_token_sent::create($params);
-    }
+    $params = array(
+        'objectid' => $token->id,
+    );
+    $event = \core\event\webservice_token_sent::create($params);
 
     $usertoken = new stdClass;
     $usertoken->token = $token->token;

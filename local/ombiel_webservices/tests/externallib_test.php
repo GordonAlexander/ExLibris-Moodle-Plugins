@@ -2745,7 +2745,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $results = local_ombiel_webservices::user_choice_response(1, $choiceinstance1->cmid);
 
      }
-     public function test_get_cm_book() {
+     public function not_for_moodlerooms_test_get_cm_book() {
          global $CFG, $DB, $USER;
 
         require_once($CFG->dirroot . '/mod/book/locallib.php');
@@ -2898,7 +2898,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $book = local_ombiel_webservices::get_cm_book($labelinstance->cmid);
 
      }
-     public function test_get_cm_book_not_enrolled() {
+     public function not_for_moodlerooms_test_get_cm_book_not_enrolled() {
          global $CFG;
         $this->resetAfterTest(true);
 
@@ -2923,7 +2923,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $book = local_ombiel_webservices::get_cm_book($bookinstance->cmid);
 
      }
-     public function test_get_book_chapter() {
+     public function not_for_moodlerooms_test_get_book_chapter() {
          global $CFG, $DB, $USER;
 
         $this->resetAfterTest(true);
@@ -3102,7 +3102,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $chapterresult = external_api::clean_returnvalue(local_ombiel_webservices::get_book_chapter_returns(), $chapterresult);
 
      }
-    public function test_get_cm_page() {
+    public function not_for_moodlerooms_test_get_cm_page() {
          global $CFG, $DB, $USER;
 
         $this->resetAfterTest(true);
@@ -3202,7 +3202,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $page = local_ombiel_webservices::get_cm_page($labelinstance->cmid);
 
      }
-     public function test_get_cm_page_not_enrolled() {
+     public function not_for_moodlerooms_test_get_cm_page_not_enrolled() {
          global $CFG;
         $this->resetAfterTest(true);
 

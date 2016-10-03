@@ -138,22 +138,19 @@ class message_output_ombiel_alerts extends message_output {
             
         } catch(SoapFault $e) {  
             debugging($e->getMessage());
-            if ($CFG->version < 2014051200) {  # Moodle 2.7
-                add_to_log(SITEID, 'ombiel_alerts', 'send alert', '', 'Error sending alert from '.$eventdata->userfrom->email.' to '.$eventdata->userto->email.'ERROR: '. $e->getMessage());
-            } else {
-                 // Trigger event for failing to send email but change error to show we mean the oMbiel Alerts system.
-                $event = \core\event\email_failed::create(array(
-                    'context' => context_system::instance(),
-                    'userid' => $eventdata->userfrom->id,
-                    'relateduserid' => $eventdata->userto->id,
-                    'other' => array(
-                        'subject' => 'oMbiel Alerts ',
-                        'message' => $note,
-                        'errorinfo' => 'Link to oMbiel Alerts system failed with error: '.$e->getMessage()
-                    )
-                ));
-                $event->trigger();
-            }
+
+             // Trigger event for failing to send email but change error to show we mean the oMbiel Alerts system.
+            $event = \core\event\email_failed::create(array(
+                'context' => context_system::instance(),
+                'userid' => $eventdata->userfrom->id,
+                'relateduserid' => $eventdata->userto->id,
+                'other' => array(
+                    'subject' => 'oMbiel Alerts ',
+                    'message' => $note,
+                    'errorinfo' => 'Link to oMbiel Alerts system failed with error: '.$e->getMessage()
+                )
+            ));
+            $event->trigger();
             return true;
         }
         return ($result->desc == 'Successful');

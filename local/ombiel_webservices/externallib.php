@@ -235,24 +235,28 @@ class local_ombiel_webservices extends external_api {
         if (empty($numberofitems)) {
             $result['activitiesdue'] = $activitiesdue;
             $result['unreadposts'] =  $unreadposts;
-            $gradelimit = '';
         } else {
             $result['activitiesdue'] = array_slice($activitiesdue, 0 , $numberofitems);
             $result['unreadposts'] =  array_slice($unreadposts, 0 , $numberofitems);
-            $gradelimit = "LIMIT {$numberofitems} ";
         }
         /**
          * Get recent grades
          */
         $recentgrades = array();
-
-        $gradesql = "SELECT i.id, g.finalgrade, g.feedback, g.feedbackformat "
-                . "FROM {grade_items} i, {grade_grades} g "
-                . "WHERE g.itemid = i.id AND g.timemodified IS NOT null AND g.userid = {$userid} AND i.courseid IN (".implode(',',$courseswithviewgrades).") "
-                . "ORDER BY g.timemodified DESC {$gradelimit}";
-
-        $gradelist = (array) $DB->get_records_sql($gradesql);
-
+        $gradelist =  array();
+        foreach ($courseswithviewgrades as $courseID) {
+            $gradesql = "SELECT i.id, g.finalgrade, g.feedback, g.feedbackformat "
+                    . "FROM {grade_items} i, {grade_grades} g "
+                    . "WHERE g.itemid = i.id AND g.timemodified IS NOT null AND g.userid = ? AND i.courseid = ? "
+                    . "ORDER BY g.timemodified DESC";
+            $grade =  $DB->get_record_sql($gradesql, array($userid, $courseId));
+            if (!empty($grade)) {
+                $gradelist[] = $grade;
+            }
+            if (!empty($numberofitems) and count($gradelist) == $numberofitems) {
+                break;
+            }
+        }
         foreach($gradelist as $grade) {
             $item = new grade_item(array('id'=>$grade->id), true);
             if (empty($item->itemmodule) ) {
@@ -437,7 +441,7 @@ class local_ombiel_webservices extends external_api {
         $course = $DB->get_record('course', array('id'=>$courseid), '*', MUST_EXIST);
         $coursecontext = context_course::instance($courseid);
 
-        $token = optional_param('wstoken', '', PARAM_RAW);
+        $token = optional_param('wstoken', '', PARAM_ALPHANUM);
 
         $retvalue['sections'] = array();
         require_once($CFG->dirroot . "/course/format/lib.php");
@@ -646,7 +650,7 @@ class local_ombiel_webservices extends external_api {
                     'section', $sectioninfo->id);
         $sectionvalues['summary'] = format_text($summary, $sectioninfo->summaryformat, array('filter'=>false));
 
-        $token = optional_param('wstoken', '', PARAM_RAW);
+        $token = optional_param('wstoken', '', PARAM_ALPHANUM);
         $sectionvalues['baselink'] = "{$CFG->wwwroot}/local/ombiel_webservices/login.php?wstoken={$token}&userid={$USER->id}&cmid=";
 
         $sectionvalues['contents'] = array();
@@ -838,13 +842,13 @@ class local_ombiel_webservices extends external_api {
         return new external_multiple_structure(
             new external_single_structure(
                 array(
-                    'id' => new external_value(PARAM_RAW, 'assignment id'),
-                    'name' => new external_value(PARAM_RAW, 'name of assignment'),
+                    'id' => new external_value(PARAM_INT, 'assignment id'),
+                    'name' => new external_value(PARAM_TEXT, 'name of assignment'),
                     'description' => new external_value(PARAM_RAW, 'intro used for assignment', VALUE_OPTIONAL),
-                    'courseid' => new external_value(PARAM_RAW, 'id of course that the assignment is in'),
+                    'courseid' => new external_value(PARAM_INT, 'id of course that the assignment is in'),
                     'deadline' => new external_value(PARAM_RAW, 'timestamp of the deadline for the course'),
-                    'status' => new external_value(PARAM_RAW, 'has the user created a submission for the assignment'),
-                    'grade' => new external_value(PARAM_RAW, 'Grade'),
+                    'status' => new external_value(PARAM_TEXT, 'has the user created a submission for the assignment'),
+                    'grade' => new external_value(PARAM_TEXT, 'Grade'),
 
                 )
             ), 'List of assignments the a user has been set in their various courses.'
@@ -1096,7 +1100,7 @@ class local_ombiel_webservices extends external_api {
             array(
                 'name' => new external_value(PARAM_TEXT, 'name of assignment'),
                 'description' => new external_value(PARAM_RAW, 'intro used for assignment', VALUE_OPTIONAL),
-                'sectionname' => new external_value(PARAM_RAW, 'name of the section, used to put files in the correct place', VALUE_OPTIONAL),
+                'sectionname' => new external_value(PARAM_TEXT, 'name of the section, used to put files in the correct place', VALUE_OPTIONAL),
                 'deadline' => new external_value(PARAM_INT, 'timestamp of the deadline for the course'),
                 'submissionstatus' => new external_value(PARAM_TEXT, 'has the user created a submission for the assignment'),
                 'onlinesubmission' => new external_value(PARAM_RAW, 'rich text submitted', VALUE_OPTIONAL),
@@ -1104,9 +1108,9 @@ class local_ombiel_webservices extends external_api {
                     new external_multiple_structure(
                         new external_single_structure(
                             array(
-                                'link' => new external_value(PARAM_RAW, 'link to file submitted'),
-                                'name' => new external_value(PARAM_RAW, 'name of file submitted'),
-                                'title' => new external_value(PARAM_RAW, 'title of file submitted'),
+                                'link' => new external_value(PARAM_TEXT, 'link to file submitted'),
+                                'name' => new external_value(PARAM_TEXT, 'name of file submitted'),
+                                'title' => new external_value(PARAM_TEXT, 'title of file submitted'),
                             )
                     ),  VALUE_DEFAULT, array()),
                 'comments' =>
@@ -1116,7 +1120,7 @@ class local_ombiel_webservices extends external_api {
                                 'content' => new external_value(PARAM_RAW, 'submission comment')
                             )
                     ),  VALUE_DEFAULT, array()),
-                'cansubmit' => new external_value(PARAM_RAW, 'true if submissions are being accepted'),
+                'cansubmit' => new external_value(PARAM_TEXT, 'true if submissions are being accepted'),
                 'grade' => new external_value(PARAM_TEXT, 'Grade', VALUE_OPTIONAL),
                 'gradedon' => new external_value(PARAM_INT, 'timestamp of grade', VALUE_OPTIONAL),
                 'gradedby' => new external_value(PARAM_TEXT, 'name of grader', VALUE_OPTIONAL),
@@ -1125,9 +1129,9 @@ class local_ombiel_webservices extends external_api {
                     new external_multiple_structure(
                         new external_single_structure(
                             array(
-                                'link' => new external_value(PARAM_RAW, 'link to file fed back'),
-                                'name' => new external_value(PARAM_RAW, 'name of file fed back'),
-                                'title' => new external_value(PARAM_RAW, 'title of file fed back'),
+                                'link' => new external_value(PARAM_TEXT, 'link to file fed back'),
+                                'name' => new external_value(PARAM_TEXT, 'name of file fed back'),
+                                'title' => new external_value(PARAM_TEXT, 'title of file fed back'),
                             )
                     ),  VALUE_DEFAULT, array()),
             )
@@ -1308,10 +1312,10 @@ class local_ombiel_webservices extends external_api {
         return new external_multiple_structure(
             new external_single_structure(
                 array(
-                    'gradeitem' => new external_value(PARAM_RAW, 'grade item name'),
-                    'grade' => new external_value(PARAM_RAW, 'course grade '),
-                    'range' => new external_value(PARAM_RAW, 'course range '),
-                    'percentage' => new external_value(PARAM_RAW, 'course percentage '),
+                    'gradeitem' => new external_value(PARAM_TEXT, 'grade item name'),
+                    'grade' => new external_value(PARAM_TEXT, 'course grade '),
+                    'range' => new external_value(PARAM_TEXT, 'course range '),
+                    'percentage' => new external_value(PARAM_TEXT, 'course percentage '),
                     'feedback' => new external_value(PARAM_RAW, 'course feedback ')
 
                 )
@@ -1794,7 +1798,7 @@ class local_ombiel_webservices extends external_api {
             $discussion->groupid = empty($groupid)?-1:$groupid;
             $discussion->timestart = 0;
             $discussion->timeend = 0;
-            $discussion->pinned = FORUM_DISCUSSION_UNPINNED;
+            $discussion->pinned = 0;
             $message = '';
 
             if ($discussion->id = forum_add_discussion($discussion, null, $message)) {
@@ -2508,7 +2512,7 @@ class local_ombiel_webservices extends external_api {
 
         $quizzesout = array();
 
-        $token = optional_param('wstoken', '', PARAM_RAW);
+        $token = optional_param('wstoken', '', PARAM_ALPHANUM);
         $quizzesout['baselink'] = "{$CFG->wwwroot}/local/ombiel_webservices/login.php?wstoken={$token}&userid={$USER->id}&cmid=";
         $quizzesout['quizzes'] = array();
         // Create.
@@ -2557,11 +2561,11 @@ class local_ombiel_webservices extends external_api {
                 new external_multiple_structure(
                     new external_single_structure(
                         array(
-                            'id' => new external_value(PARAM_RAW, 'quiz id'),
-                            'coursemoduleid' => new external_value(PARAM_RAW, 'cm id'),
-                            'name' => new external_value(PARAM_RAW, 'name of quiz'),
+                            'id' => new external_value(PARAM_INT, 'quiz id'),
+                            'coursemoduleid' => new external_value(PARAM_INT, 'cm id'),
+                            'name' => new external_value(PARAM_TEXT, 'name of quiz'),
                             'description' => new external_value(PARAM_RAW, 'intro used for quiz', VALUE_OPTIONAL),
-                            'courseid' => new external_value(PARAM_RAW, 'id of course that the quiz is in'),
+                            'courseid' => new external_value(PARAM_INT, 'id of course that the quiz is in'),
 
                         )
                     )
@@ -2768,11 +2772,11 @@ class local_ombiel_webservices extends external_api {
             new external_single_structure(
                 array(
                     'id' => new external_value(PARAM_INT, 'id'),
-                    'useridfrom'=> new external_value(PARAM_RAW, 'useridfrom'),
-                    'useridto' => new external_value(PARAM_RAW, 'useridto'),
+                    'useridfrom'=> new external_value(PARAM_INT, 'useridfrom'),
+                    'useridto' => new external_value(PARAM_INT, 'useridto'),
                     'message'=> new external_value(PARAM_RAW, 'message'),
-                    'timecreated'=> new external_value(PARAM_RAW, 'timecreated'),
-                    'timeread'=> new external_value(PARAM_RAW, 'timeread'),
+                    'timecreated'=> new external_value(PARAM_TEXT, 'timecreated'),
+                    'timeread'=> new external_value(PARAM_TEXT, 'timeread'),
 
                 ), 'List of messages'
             )
@@ -2802,7 +2806,7 @@ class local_ombiel_webservices extends external_api {
         }
 
         $result = array();
-        $token = optional_param('wstoken', '', PARAM_RAW);
+        $token = optional_param('wstoken', '', PARAM_ALPHANUM);
         $result['link'] = "{$CFG->wwwroot}/local/ombiel_webservices/login.php?wstoken={$token}&userid={$USER->id}{$courseparam}";
 
         return $result;
@@ -2823,7 +2827,7 @@ class local_ombiel_webservices extends external_api {
     public static function get_native_moodle_link_returns() {
         return new external_single_structure(
             array(
-                'link' => new external_value(PARAM_RAW, 'link to login to message settings'),
+                'link' => new external_value(PARAM_TEXT, 'link to login to message settings'),
             )
         );
     }
@@ -2835,7 +2839,7 @@ class local_ombiel_webservices extends external_api {
         global $CFG, $DB, $USER;
 
         $result = array();
-        $token = optional_param('wstoken', '', PARAM_RAW);
+        $token = optional_param('wstoken', '', PARAM_ALPHANUM);
         $result['link'] = "{$CFG->wwwroot}/local/ombiel_webservices/login.php?wstoken={$token}&userid={$USER->id}&messages=true";
 
         return $result;
@@ -2855,7 +2859,7 @@ class local_ombiel_webservices extends external_api {
     public static function get_message_settings_link_returns() {
         return new external_single_structure(
             array(
-                'link' => new external_value(PARAM_RAW, 'link to login to message settings'),
+                'link' => new external_value(PARAM_TEXT, 'link to login to message settings'),
             )
         );
     }

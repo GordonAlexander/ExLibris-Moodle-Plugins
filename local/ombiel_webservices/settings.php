@@ -38,7 +38,7 @@ if ($hassiteconfig) {
             get_string('campusmldapusername', 'local_ombiel_webservices'), 
             get_string('configcampusmldapusername', 'local_ombiel_webservices'), 
             '',
-            PARAM_RAW,
+            PARAM_TEXT,
             100
         ));
     
@@ -54,7 +54,7 @@ if ($hassiteconfig) {
             get_string('campusmldapmethod', 'local_ombiel_webservices'), 
             get_string('configcampusmldapmethod', 'local_ombiel_webservices'), 
             'login',
-            PARAM_RAW,
+            PARAM_TEXT,
             100
         ));
 }
