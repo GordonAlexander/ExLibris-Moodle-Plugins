@@ -50,6 +50,6 @@ Unzip the plugin and put it in the local folder. If the plugin is in the correct
 2. Go to Site administration > Notifications and install the plugin.
 3. Complete the plugin settings form. The correct settings can be obtained from ExLibris.
 4. Go to Site administration > Development > Purge all caches and click on the Purge all caches button.
-5. Go to Site administration > Plugins > Message outputs > Default message outputs and review the default settings.
+5. Go to Site administration > Plugins > Message outputs > Default message outputs and setup the default settings.
 
 N.B. If these settings need changing they can be found at Site administration > Plugins > Message outputs.
