@@ -2,8 +2,8 @@
 /**
  * Version details
  *
- * @copyright &copy; 2014 oMbiel
- * @author oMbiel
+ * @copyright &copy; 2014 ExLibris
+ * @author ExLibris
  * @package oMbiel_webservices
  * @version 1.0
  */

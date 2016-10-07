@@ -3,8 +3,8 @@
 /**
  * External oMbiel web service api
  *
- * @copyright &copy; 2013 oMbiel
- * @author oMbiel
+ * @copyright 2016 ExLibris
+ * @author ExLibris
  * @package oMbiel_webservices
  * @version 1.0
  */

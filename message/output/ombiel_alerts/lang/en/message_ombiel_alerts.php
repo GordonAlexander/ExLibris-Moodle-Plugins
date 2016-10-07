@@ -4,16 +4,14 @@
  * Version details
  *
  * @copyright &copy; 2014 oMbiel
- * @author oMbiel
+ * @author ExLibris
  * @package oMbiel_webservices
  * @version 1.0
  */
 global $CFG;
 
-$string['pluginname'] = empty($CFG->ombielalertsname)?'oMbiel alerts':$CFG->ombielalertsname;
+$string['pluginname'] = 'campusM alerts';
 
-$string['ombielalertsname'] = 'Alerts name';
-$string['configombielalertsname'] = 'The name of your alerts, for example "My Uni alerts" (this will not take effect until the cache is purged)';
 $string['ombielalertsserverendpoint'] = 'Alert server endpoint';
 $string['configombielalertsserverendpoint'] = 'URL of the oMbiel alerts server for example ';
 $string['ombielalertsserverusername'] = 'Server username';

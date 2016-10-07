@@ -4,21 +4,13 @@
  * Version details
  *
  * @copyright &copy; 2014 oMbiel
- * @author oMbiel
+ * @author ExLibris
  * @package oMbiel_webservices
  * @version 1.0
  */
 defined('MOODLE_INTERNAL') || die;
 
 if ($ADMIN->fulltree) {
-    $settings->add(new admin_setting_configtext(
-            'ombielalertsname', 
-            get_string('ombielalertsname', 'message_ombiel_alerts'), 
-            get_string('configombielalertsname', 'message_ombiel_alerts'), 
-            get_string('pluginname', 'message_ombiel_alerts'), 
-            PARAM_TEXT
-            )
-    );
     $settings->add(new admin_setting_configtext(
             'ombielalertsserverendpoint', 
             get_string('ombielalertsserverendpoint', 'message_ombiel_alerts'), 

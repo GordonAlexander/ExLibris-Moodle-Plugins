@@ -2,13 +2,13 @@
 /**
  * Local ombiel web services language files
  *
- * @copyright &copy; 2013 oMbiel
- * @author oMbiel
+ * @copyright 2016 ExLibris
+ * @author ExLibris
  * @package oMbiel_webservices
  * @version 1.0
  */
 
-$string['pluginname'] = 'oMbiel Webservices';
+$string['pluginname'] = 'campusM Webservices';
 $string['nonewsfound'] = 'No news found';
 $string['coursenotfound'] = 'Course not found';
 $string['usernotfound'] = 'User not found';
@@ -35,12 +35,6 @@ $string['notaforum'] = 'This is not a forum';
 $string['notachoice'] = 'This is not a choice';
 $string['invalidprovider'] = 'This is not a valid message provider';
 $string['notanassignment'] = 'This is not an assignment';
-$string['ombiel_webservices:createtimelimitedtoken'] = 'Create time limited token';
-$string['ombiel_webservices:allowtokenlogin'] = 'Allow to log in to the website using a token';
-$string['configtokentimeout'] = 'If a token isn\'t used for a while it expires.  This variable specifies how long this time should be. Defaults to session timeout';
-$string['tokentimeout'] = 'Token timeout';
-$string['configombielallowtokenlogin'] = 'Allow users to log in to the website using a web services token. This also requires the user to have the allowtokenlogin capability. Admin users can not log in this way.';
-$string['ombielallowtokenlogin'] = 'Allow token login';
 $string['configcampusmldapendpoint'] = 'Only add if you wish to authenticate against the CampusM Service. Normally the same as in the CampusM App Manager.';
 $string['campusmldapendpoint'] = 'campusM LDAP end point';
 $string['configcampusmldapusername'] = 'Username';

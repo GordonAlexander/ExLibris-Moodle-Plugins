@@ -16,8 +16,8 @@
 /**
  * Details services
  *
- * @copyright &copy; 2013 oMbiel
- * @author oMbiel
+ * @copyright 2016 ExLibris
+ * @author ExLibris
  * @package oMbiel_webservices
  * @version 1.0
  */
@@ -275,6 +275,3 @@ $services = array(
         'downloadfiles' => 1,
     ),
 );
-if ($CFG->version >= 2013051400) { #2.5
-    $services['campusm']['functions'][] = 'core_calendar_get_calendar_events';
-}
