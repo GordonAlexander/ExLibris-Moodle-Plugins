@@ -30,11 +30,11 @@ if ($hassiteconfig) {
     $ADMIN->add('localplugins', $settings);
     
     $settings->add(new admin_setting_configtext('local_ombiel_webservices/campusmhostname',
-                        get_string('local_campusmhostname_key', 'local_ombiel_webservices'),
-                        get_string('local_campusmhostname', 'local_ombiel_webservices'), '', PARAM_LOCALURL));
+                        get_string('campusmhostname_key', 'local_ombiel_webservices'),
+                        get_string('campusmhostname', 'local_ombiel_webservices'), '', PARAM_LOCALURL));
                         
     $settings->add(new admin_setting_configtext('local_ombiel_webservices/campusmaekscreen',
-                        get_string('local_campusmaekscreen_key', 'local_ombiel_webservices'),
-                        get_string('local_campusmaekscreen', 'local_ombiel_webservices'), '', PARAM_ALPHANUM));
+                        get_string('campusmaekscreen_key', 'local_ombiel_webservices'),
+                        get_string('campusmaekscreen', 'local_ombiel_webservices'), '', PARAM_ALPHANUM));
 
 }
