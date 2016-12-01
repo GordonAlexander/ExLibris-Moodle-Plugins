@@ -209,8 +209,8 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $cmcontext = context_module::instance($visiblelabelinstance->cmid);
 
         $this->assertEquals($visiblelabelinstance->cmid, $labelout['id']);
-        $this->assertEquals('<img src="'.$CFG->wwwroot.'/webservice/pluginfile.php/'.
-            $cmcontext->id.'/mod_label/intro/_dummy.jpg" height="20" width="20" />',
+        $this->assertEquals('<div class="text_to_html"><img src="'.$CFG->wwwroot.'/webservice/pluginfile.php/'.
+            $cmcontext->id.'/mod_label/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
             $labelout['description']);
 
         $cmcontext = context_module::instance($resourceinstance->cmid);
@@ -219,8 +219,8 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $this->assertEquals($CFG->wwwroot.'/webservice/pluginfile.php/'.
                 $cmcontext->id.'/mod_resource/content/0/resource1.txt?forcedownload=1',
                 $resourceout['contents'][0]['fileurl']);
-        $this->assertEquals('<img src="'.$CFG->wwwroot.'/webservice/pluginfile.php/'.
-            $cmcontext->id.'/mod_resource/intro/_dummy.jpg" height="20" width="20" />',
+        $this->assertEquals('<div class="text_to_html"><img src="'.$CFG->wwwroot.'/webservice/pluginfile.php/'.
+            $cmcontext->id.'/mod_resource/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
             $resourceout['description']);
 
         $forumout = next($lastsection['coursemodules']);
@@ -381,8 +381,8 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $cmcontext = context_module::instance($visiblelabelinstance->cmid);
 
         $this->assertEquals($visiblelabelinstance->cmid, $labelout['id']);
-        $this->assertEquals('<img src="'.$CFG->wwwroot.'/webservice/pluginfile.php/'.
-                $cmcontext->id.'/mod_label/intro/_dummy.jpg" height="20" width="20" />',
+        $this->assertEquals('<div class="text_to_html"><img src="'.$CFG->wwwroot.'/webservice/pluginfile.php/'.
+                $cmcontext->id.'/mod_label/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
                 $labelout['description']);
 
         if ($CFG->version >= 2013051400) { // resource generator added in 2.5
@@ -392,8 +392,8 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
             $this->assertEquals($CFG->wwwroot.'/webservice/pluginfile.php/'.
                     $cmcontext->id.'/mod_resource/content/0/resource1.txt?forcedownload=1',
                     $resourceout['contents'][0]['fileurl']);
-            $this->assertEquals('<img src="'.$CFG->wwwroot.'/webservice/pluginfile.php/'.
-                    $cmcontext->id.'/mod_resource/intro/_dummy.jpg" height="20" width="20" />',
+            $this->assertEquals('<div class="text_to_html"><img src="'.$CFG->wwwroot.'/webservice/pluginfile.php/'.
+                    $cmcontext->id.'/mod_resource/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
                     $resourceout['description']);
         }
         $forumout = next($sectionout['contents']);
@@ -475,9 +475,9 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $this->assertEquals(2, count($assignments));
         $this->assertEquals('Assignment 2', $assignments[0]['name']);
         $cmcontext = context_module::instance($assignment2instance->cmid);
-        $this->assertEquals('<img src="'.$CFG->wwwroot.
+        $this->assertEquals('<div class="text_to_html"><img src="'.$CFG->wwwroot.
                 '/webservice/pluginfile.php/'.$cmcontext->id.
-                '/mod_assign/intro/_dummy.jpg" height="20" width="20" />',
+                '/mod_assign/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
                 $assignments[0]['description']);
         $this->assertEquals($course2->id, $assignments[0]['courseid']);
         $this->assertEquals(1642550401, $assignments[0]['deadline']);
@@ -574,9 +574,9 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $this->assertEquals('Assignment 2', $assignments[1]['name']);
 
         $cmcontext = context_module::instance($assignment2instance->cmid);
-        $this->assertEquals('<img src="'.$CFG->wwwroot.
+        $this->assertEquals('<div class="text_to_html"><img src="'.$CFG->wwwroot.
                 '/webservice/pluginfile.php/'.$cmcontext->id
-                .'/mod_assign/intro/_dummy.jpg" height="20" width="20" />',
+                .'/mod_assign/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
                 $assignments[1]['description']);
         $this->assertEquals($course1->id, $assignments[1]['courseid']);
         $this->assertEquals(1642550401, $assignments[1]['deadline']);
@@ -653,9 +653,9 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
 
         $this->assertEquals('Test assignment', $assignmentresult['name']);
         $this->assertEquals('', $assignmentresult['sectionname']);
-        $this->assertEquals('<img src="'.$CFG->wwwroot.
+        $this->assertEquals('<div class="text_to_html"><img src="'.$CFG->wwwroot.
                 '/webservice/pluginfile.php/'.$cmcontext->id
-                .'/mod_assign/intro/_dummy.jpg" height="20" width="20" />',
+                .'/mod_assign/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
                 $assignmentresult['description']);
         $this->assertEquals(1642550401, $assignmentresult['deadline']);
         $this->assertEquals('new', $assignmentresult['submissionstatus']);
@@ -774,9 +774,9 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $assignmentresult = external_api::clean_returnvalue(local_ombiel_webservices::get_cm_assignment_returns(), $assignmentresult);
 
         $this->assertEquals('Test assignment', $assignmentresult['name']);
-        $this->assertEquals('<img src="'.$CFG->wwwroot.
+        $this->assertEquals('<div class="text_to_html"><img src="'.$CFG->wwwroot.
                 '/webservice/pluginfile.php/'.$cmcontext->id
-                .'/mod_assign/intro/_dummy.jpg" height="20" width="20" />',
+                .'/mod_assign/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
                 $assignmentresult['description']);
         $this->assertEquals(1642550401, $assignmentresult['deadline']);
         $this->assertEquals('submitted', $assignmentresult['submissionstatus']);
@@ -892,9 +892,9 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $assignmentresult = external_api::clean_returnvalue(local_ombiel_webservices::get_cm_assignment_returns(), $assignmentresult);
 
         $this->assertEquals('Test assignment', $assignmentresult['name']);
-        $this->assertEquals('<img src="'.$CFG->wwwroot.
+        $this->assertEquals('<div class="text_to_html"><img src="'.$CFG->wwwroot.
                 '/webservice/pluginfile.php/'.$cmcontext->id
-                .'/mod_assign/intro/_dummy.jpg" height="20" width="20" />',
+                .'/mod_assign/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
                 $assignmentresult['description']);
         $this->assertEquals(1642550401, $assignmentresult['deadline']);
         $this->assertEquals('submitted', $assignmentresult['submissionstatus']);
@@ -1397,9 +1397,9 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $this->assertEquals('Forum 2', $forums[1]['name']);
 
         $cm2context = context_module::instance($forum2instance->cmid);
-        $this->assertEquals('<img src="'.$CFG->wwwroot.
+        $this->assertEquals('<div class="text_to_html"><img src="'.$CFG->wwwroot.
                 '/webservice/pluginfile.php/'.$cm2context->id
-                .'/mod_forum/intro/_dummy.jpg" height="20" width="20" />',
+                .'/mod_forum/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
                 $forums[1]['description']);
         $this->assertEquals($forum2instance->cmid, $forums[1]['id']);
 
@@ -1467,9 +1467,9 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $this->assertEquals('Forum 1', $forum['name']);
         $this->assertEquals($forum1instance->id, $forum['id']);
         $cmcontext = context_module::instance($forum1instance->cmid);
-        $this->assertEquals('<img src="'.$CFG->wwwroot.
+        $this->assertEquals('<div class="text_to_html"><img src="'.$CFG->wwwroot.
                 '/webservice/pluginfile.php/'.$cmcontext->id
-                .'/mod_forum/intro/_dummy.jpg" height="20" width="20" />',
+                .'/mod_forum/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
                 $forum['description']);
         $this->assertEquals(false, $forum['canpost']);
 
@@ -2153,9 +2153,9 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $this->assertEquals(2, count($forums));
         $this->assertEquals('Forum 2', $forums[0]['name']);
         $cmcontext = context_module::instance($forum2instance->cmid);
-        $this->assertEquals('<img src="'.$CFG->wwwroot.
+        $this->assertEquals('<div class="text_to_html"><img src="'.$CFG->wwwroot.
                 '/webservice/pluginfile.php/'.$cmcontext->id.
-                '/mod_forum/intro/_dummy.jpg" height="20" width="20" />',
+                '/mod_forum/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
                 $forums[0]['description']);
 
         $this->assertArrayNotHasKey('description',$forums[1]);
@@ -2292,9 +2292,9 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         }
 
         $this->assertEquals('Choice 1', $choice['name']);
-        $this->assertEquals('<img src="'.$CFG->wwwroot.
+        $this->assertEquals('<div class="text_to_html"><img src="'.$CFG->wwwroot.
                 '/webservice/pluginfile.php/'.$cmcontext1->id
-                .'/mod_choice/intro/_dummy.jpg" height="20" width="20" />',
+                .'/mod_choice/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
                 $choice['description']);
         $this->assertEquals(false, $choice['allowanswer']);
         $this->assertEquals(false, $choice['showresults']);
@@ -2332,9 +2332,9 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $choice = external_api::clean_returnvalue(local_ombiel_webservices::get_cm_choice_returns(), $choice);
 
         $this->assertEquals('Choice 2', $choice['name']);
-        $this->assertEquals('<img src="'.$CFG->wwwroot.
+        $this->assertEquals('<div class="text_to_html"><img src="'.$CFG->wwwroot.
                 '/webservice/pluginfile.php/'.$cmcontext2->id
-                .'/mod_choice/intro/_dummy.jpg" height="20" width="20" />',
+                .'/mod_choice/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
                 $choice['description']);
         $this->assertEquals(true, $choice['allowanswer']);
         $this->assertEquals(false, $choice['showresults']);
@@ -2745,7 +2745,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $results = local_ombiel_webservices::user_choice_response(1, $choiceinstance1->cmid);
 
      }
-     public function not_for_moodlerooms_test_get_cm_book() {
+     public function test_get_cm_book() {
          global $CFG, $DB, $USER;
 
         require_once($CFG->dirroot . '/mod/book/locallib.php');
@@ -2898,7 +2898,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $book = local_ombiel_webservices::get_cm_book($labelinstance->cmid);
 
      }
-     public function not_for_moodlerooms_test_get_cm_book_not_enrolled() {
+     public function test_get_cm_book_not_enrolled() {
          global $CFG;
         $this->resetAfterTest(true);
 
@@ -2923,7 +2923,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $book = local_ombiel_webservices::get_cm_book($bookinstance->cmid);
 
      }
-     public function not_for_moodlerooms_test_get_book_chapter() {
+     public function test_get_book_chapter() {
          global $CFG, $DB, $USER;
 
         $this->resetAfterTest(true);
@@ -3102,7 +3102,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $chapterresult = external_api::clean_returnvalue(local_ombiel_webservices::get_book_chapter_returns(), $chapterresult);
 
      }
-    public function not_for_moodlerooms_test_get_cm_page() {
+    public function test_get_cm_page() {
          global $CFG, $DB, $USER;
 
         $this->resetAfterTest(true);
@@ -3163,8 +3163,8 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         }
 
         $this->assertArrayNotHasKey('name',$page);
-        $this->assertEquals('First Page intro:<img src="http://www.example.com/moodle/webservice/pluginfile.php/'.
-            $context1->id.'/mod_page/intro/_dummy.jpg" height="20" width="20" /><p>paragraph</p>',
+        $this->assertEquals('<div class="text_to_html">First Page intro:<img src="http://www.example.com/moodle/webservice/pluginfile.php/'.
+            $context1->id.'/mod_page/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /><p>paragraph</p></div>',
             $page['description']);
         $this->assertContains('<div class="text_to_html">First Page content:<img src="http://www.example.com/moodle/webservice/pluginfile.php/'.
                 $context1->id.'/mod_page/content/'.
@@ -3202,7 +3202,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $page = local_ombiel_webservices::get_cm_page($labelinstance->cmid);
 
      }
-     public function not_for_moodlerooms_test_get_cm_page_not_enrolled() {
+     public function test_get_cm_page_not_enrolled() {
          global $CFG;
         $this->resetAfterTest(true);
 
@@ -3284,9 +3284,9 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $this->assertEquals($CFG->wwwroot.'/local/ombiel_webservices/login.php?wstoken='.md5('test').'&userid='.$user1->id.'&cmid=',$response['baselink']);
 
         $cmcontext = context_module::instance($quiz2instance->cmid);
-        $this->assertEquals('<img src="'.$CFG->wwwroot.
+        $this->assertEquals('<div class="text_to_html"><img src="'.$CFG->wwwroot.
                 '/webservice/pluginfile.php/'.$cmcontext->id
-                .'/mod_quiz/intro/_dummy.jpg" height="20" width="20" />',
+                .'/mod_quiz/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
                 $response['quizzes'][1]['description']);
         $this->assertEquals($course1->id, $response['quizzes'][1]['courseid']);
         /**

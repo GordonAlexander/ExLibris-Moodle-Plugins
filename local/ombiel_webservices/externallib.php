@@ -381,11 +381,17 @@ class local_ombiel_webservices extends external_api {
         }
 
         $my_courses = enrol_get_users_courses($userid, true, 'id, fullname', 'sortorder ASC, fullname ASC');
-
+        
+            $settings = external_settings::get_instance();
+            $settings->set_filter(true);
         $usercourses = array();
         if (!empty($my_courses)) {
             foreach ($my_courses as $course) {
-                $usercourses[] = (array)$course;
+                $context = context_course::instance($course->id, IGNORE_MISSING);
+                $usercourses[] = array(
+                    'id'=>$course->id,
+                    'fullname'=>external_format_string(get_course_display_name_for_list($course),$context->id)
+                );
             }
         }
 
@@ -484,7 +490,10 @@ class local_ombiel_webservices extends external_api {
                             $instance = $DB->get_record($cm->modname, array('id'=>$cm->instance));
                             if (!empty($cm->showdescription) or $cm->modname == 'label') {
                                 $cmcontext = context_module::instance($cm->id);
-                                $module['description'] = file_rewrite_pluginfile_urls($instance->intro, 'webservice/pluginfile.php', $cmcontext->id, 'mod_'.$cm->modname, 'intro', null);
+                                $module['description'] = format_text(
+                                    file_rewrite_pluginfile_urls($instance->intro, 'webservice/pluginfile.php', $cmcontext->id, 'mod_'.$cm->modname, 'intro', null)
+                                );
+       
                             }
                             $baseurl = 'webservice/pluginfile.php';
                             if ($cm->modname == 'panopto') {
@@ -669,7 +678,9 @@ class local_ombiel_webservices extends external_api {
                 $instance = $DB->get_record($cm->modname, array('id'=>$cm->instance));
                 if (!empty($cm->showdescription) or $cm->modname == 'label') {
                     $cmcontext = context_module::instance($cm->id);
-                    $module['description'] = file_rewrite_pluginfile_urls($instance->intro, 'webservice/pluginfile.php', $cmcontext->id, 'mod_'.$cm->modname, 'intro', null);
+                    $module['description'] = format_text(
+                        file_rewrite_pluginfile_urls($instance->intro, 'webservice/pluginfile.php', $cmcontext->id, 'mod_'.$cm->modname, 'intro', null)
+                    );
                 }
                 $baseurl = 'webservice/pluginfile.php';
                 if ($cm->modname == 'panopto') {
@@ -801,9 +812,11 @@ class local_ombiel_webservices extends external_api {
                             $assignout = array();
                             $instance = $assign->get_instance();
                             $assignout['id'] = $cm->id;
-                            $assignout['name'] = $cm->name;
+                            $assignout['name'] = format_string($cm->name);
                             if (!empty($cm->showdescription)) {
-                                $assignout['description'] = file_rewrite_pluginfile_urls($instance->intro, 'webservice/pluginfile.php', $context->id, 'mod_assign', 'intro', null);
+                                $assignout['description'] = format_text(
+                                    file_rewrite_pluginfile_urls($instance->intro, 'webservice/pluginfile.php', $context->id, 'mod_assign', 'intro', null)
+                                );
                             }
                             $assignout['courseid'] = $cm->course;
 
@@ -886,9 +899,11 @@ class local_ombiel_webservices extends external_api {
                     $instance = $assign->get_instance();
                     $assignout = array();
                     $assignout['id'] = $cm->id;
-                    $assignout['name'] = $cm->name;
+                    $assignout['name'] = format_string($cm->name);
                     if (!empty($cm->showdescription)) {
-                        $assignout['description'] = file_rewrite_pluginfile_urls($instance->intro, 'webservice/pluginfile.php', $context->id, 'mod_assign', 'intro', null);
+                        $assignout['description'] = format_text(
+                            file_rewrite_pluginfile_urls($instance->intro, 'webservice/pluginfile.php', $context->id, 'mod_assign', 'intro', null)
+                        );
                     }
                     $assignout['courseid'] = $cm->course;
                     $assignout['grade'] = $assign->get_user_grade($USER->id, false);
@@ -969,10 +984,12 @@ class local_ombiel_webservices extends external_api {
         $assign = new assign($context, $cm, $course);
 
         $assignout = array();
-        $assignout['name'] = $instance->name;
+        $assignout['name'] = format_string($instance->name);
         $assignout['sectionname'] = $section->name;
 
-        $assignout['description'] = file_rewrite_pluginfile_urls($instance->intro, 'webservice/pluginfile.php', $context->id, 'mod_assign', 'intro', null);
+        $assignout['description'] = format_text(
+            file_rewrite_pluginfile_urls($instance->intro, 'webservice/pluginfile.php', $context->id, 'mod_assign', 'intro', null)
+        );
 
         $assignout['deadline'] = $instance->duedate;
 
@@ -1359,10 +1376,12 @@ class local_ombiel_webservices extends external_api {
                         $instance = $DB->get_record('forum', array('id'=>$cm->instance), '*', MUST_EXIST);
                         $forumout = array();
                         $forumout['id'] = $instance->id;
-                        $forumout['name'] = $instance->name;
+                        $forumout['name'] = format_string($instance->name);
                         if (!empty($cm->showdescription)) {
                             $context = context_module::instance($cm->id);
-                            $forumout['description'] = file_rewrite_pluginfile_urls($instance->intro, 'webservice/pluginfile.php', $context->id, 'mod_forum', 'intro', null);
+                            $forumout['description'] = format_text(
+                                file_rewrite_pluginfile_urls($instance->intro, 'webservice/pluginfile.php', $context->id, 'mod_forum', 'intro', null)
+                            );
                         }
                         $forumout['courseid'] = $cm->course;
                         $forumtracked = forum_tp_is_tracked($instance);
@@ -1436,7 +1455,9 @@ class local_ombiel_webservices extends external_api {
                 $forum->name = $f->name;
                 if (!empty($f->cm->showdescription)) {
                     $context = context_module::instance($f->cm->id);
-                    $forum->description = file_rewrite_pluginfile_urls($f->intro, 'webservice/pluginfile.php', $context->id, 'mod_forum', 'intro', null);
+                    $forum->description = format_text(
+                        file_rewrite_pluginfile_urls($f->intro, 'webservice/pluginfile.php', $context->id, 'mod_forum', 'intro', null)
+                    );
                 };
 
                 $courseforums[] = (array)$forum;
@@ -1510,7 +1531,9 @@ class local_ombiel_webservices extends external_api {
             $forum->coursemoduleid = $cm->id;
             $forum->name = $f->name;
             $context = context_module::instance($cm->id);
-            $forum->description = file_rewrite_pluginfile_urls($f->intro, 'webservice/pluginfile.php', $context->id, 'mod_forum', 'intro', null);
+            $forum->description = format_text(
+                file_rewrite_pluginfile_urls($f->intro, 'webservice/pluginfile.php', $context->id, 'mod_forum', 'intro', null)
+            );
             $forum->canpost = forum_user_can_post_discussion($f, $currentgroup, $groupmode, $cm, $context);
             $courseforum = (array)$forum;
 
@@ -2033,7 +2056,7 @@ class local_ombiel_webservices extends external_api {
         $bookout = array();
 
         $bookout['id'] = $bookrecord->id;
-        $bookout['name'] = $bookrecord->name;
+        $bookout['name'] = format_string($bookrecord->name);
         switch ($bookrecord->numbering) {
             case BOOK_NUM_NONE:
                 $bookout['numbering'] = 'none';
@@ -2250,11 +2273,13 @@ class local_ombiel_webservices extends external_api {
 
         $page['id'] = $pagerecord->id;
         if (!empty($options['printheading'])) {
-            $page['name'] = $pagerecord->name;
+            $page['name'] = format_string($pagerecord->name);
         }
         if (!empty($options['printintro'])) {
-            $page['description'] = file_rewrite_pluginfile_urls($pagerecord->intro,
-                    'webservice/pluginfile.php', $context->id, 'mod_page', 'intro', null);
+            $page['description'] = format_text(
+                file_rewrite_pluginfile_urls($pagerecord->intro,
+                    'webservice/pluginfile.php', $context->id, 'mod_page', 'intro', null)
+            );
         }
         $page['content'] = file_rewrite_pluginfile_urls($pagerecord->content,
                 'webservice/pluginfile.php', $context->id, 'mod_page', 'content', $pagerecord->revision);
@@ -2338,9 +2363,11 @@ class local_ombiel_webservices extends external_api {
         $choicerecord = choice_get_choice($cm->instance);
 
         $choiceout['id'] = $cm->instance;
-        $choiceout['name'] = $choicerecord->name;
+        $choiceout['name'] = format_string($choicerecord->name);
 
-        $choiceout['description'] = file_rewrite_pluginfile_urls($choicerecord->intro, 'webservice/pluginfile.php', $context->id, 'mod_choice', 'intro', null);
+        $choiceout['description'] = format_text(
+            file_rewrite_pluginfile_urls($choicerecord->intro, 'webservice/pluginfile.php', $context->id, 'mod_choice', 'intro', null)
+        );
         $now = time();
 
         $choiceout['allowanswer'] = false;
@@ -2525,9 +2552,11 @@ class local_ombiel_webservices extends external_api {
                     $quizout = array();
                     $quizout['id'] = $cm->instance;
                     $quizout['coursemoduleid'] = $cm->id;
-                    $quizout['name'] = $cm->name;
+                    $quizout['name'] =format_string($cm->name);
                     if (!empty($cm->showdescription)) {
-                        $quizout['description'] = file_rewrite_pluginfile_urls($instance->intro, 'webservice/pluginfile.php', $context->id, 'mod_quiz', 'intro', null);
+                        $quizout['description'] = format_text(
+                            file_rewrite_pluginfile_urls($instance->intro, 'webservice/pluginfile.php', $context->id, 'mod_quiz', 'intro', null)
+                        );
                     }
                     $quizout['courseid'] = $cm->course;
                     $quizzesout['quizzes'][] = $quizout;
@@ -2601,11 +2630,13 @@ class local_ombiel_webservices extends external_api {
                 if ($course_module->uservisible) {
                     $resourceout = array();
                     $resourceout['id'] = $course_module->id;
-                    $resourceout['name'] = $course_module->name;
+                    $resourceout['name'] = format_string($course_module->name);
                     if (!empty($course_module->showdescription)) {
                         $instance = $DB->get_record('resource', array('id'=>$course_module->instance));
                         $context = context_module::instance($course_module->id);
-                        $resourceout['description'] = file_rewrite_pluginfile_urls($instance->intro, 'webservice/pluginfile.php', $context->id, 'mod_resource', 'intro', null);
+                        $resourceout['description'] = format_text(
+                            file_rewrite_pluginfile_urls($instance->intro, 'webservice/pluginfile.php', $context->id, 'mod_resource', 'intro', null)
+                        );
                     };
                     $baseurl = 'webservice/pluginfile.php';
 

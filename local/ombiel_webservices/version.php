@@ -7,10 +7,12 @@
  * @author ExLibris
  * @package oMbiel_webservices
  * @version 1.0
+ *
+ * Standard version with Multilang filters switched on
  */
 
 defined('MOODLE_INTERNAL') || die;
 
-$plugin->version  = 2016101701;   // The (date) version of this plugin
+$plugin->version  = 2016113001;   // The (date) version of this plugin
 $plugin->requires = 2015051100;   // Requires this Moodle version.
 $plugin->component = 'local_ombiel_webservices';  // Full name of the plugin (used for diagnostics)
