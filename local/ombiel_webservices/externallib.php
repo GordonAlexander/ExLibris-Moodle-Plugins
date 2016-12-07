@@ -390,7 +390,12 @@ class local_ombiel_webservices extends external_api {
                 $context = context_course::instance($course->id, IGNORE_MISSING);
                 $usercourses[] = array(
                     'id'=>$course->id,
-                    'fullname'=>external_format_string(get_course_display_name_for_list($course),$context->id)
+                    'fullname'=>external_format_string(
+                        get_course_display_name_for_list($course),
+                        $context->id,
+                        true,
+                        array('escape'=>0)
+                    )
                 );
             }
         }
@@ -490,10 +495,7 @@ class local_ombiel_webservices extends external_api {
                             $instance = $DB->get_record($cm->modname, array('id'=>$cm->instance));
                             if (!empty($cm->showdescription) or $cm->modname == 'label') {
                                 $cmcontext = context_module::instance($cm->id);
-                                $module['description'] = format_text(
-                                    file_rewrite_pluginfile_urls($instance->intro, 'webservice/pluginfile.php', $cmcontext->id, 'mod_'.$cm->modname, 'intro', null)
-                                );
-       
+                                $module['description'] = format_module_intro($cm->modname, $instance, $cm->id, true);       
                             }
                             $baseurl = 'webservice/pluginfile.php';
                             if ($cm->modname == 'panopto') {
