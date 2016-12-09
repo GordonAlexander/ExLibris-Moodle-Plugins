@@ -370,7 +370,7 @@ class local_ombiel_webservices extends external_api {
      */
     public static function  get_user_courses($userid = null) {
         global $CFG, $USER;
-
+        
         if (empty($userid)) {
             $userid = $USER->id;
         } elseif ($userid != $USER->id) {
@@ -382,8 +382,9 @@ class local_ombiel_webservices extends external_api {
 
         $my_courses = enrol_get_users_courses($userid, true, 'id, fullname', 'sortorder ASC, fullname ASC');
         
-            $settings = external_settings::get_instance();
-            $settings->set_filter(true);
+        $settings = external_settings::get_instance();
+        $settings->set_filter(true);
+        
         $usercourses = array();
         if (!empty($my_courses)) {
             foreach ($my_courses as $course) {
@@ -424,9 +425,9 @@ class local_ombiel_webservices extends external_api {
             new external_single_structure(
                 array(
                     'id' => new external_value(PARAM_INT, 'course id'),
-                    'fullname' => new external_value(PARAM_TEXT, 'course full name'),
+                    'fullname' => new external_value(PARAM_TEXT, 'course full name')
                 )
-            ), 'List of user courses.'
+            ), 'List of user courses.'            
         );
     }
 
@@ -495,7 +496,9 @@ class local_ombiel_webservices extends external_api {
                             $instance = $DB->get_record($cm->modname, array('id'=>$cm->instance));
                             if (!empty($cm->showdescription) or $cm->modname == 'label') {
                                 $cmcontext = context_module::instance($cm->id);
-                                $module['description'] = format_module_intro($cm->modname, $instance, $cm->id, true);       
+                                $options = array('noclean' => true, 'para' => false, 'filter' => true, 'context' => $cmcontext, 'overflowdiv' => true);
+                                $intro = file_rewrite_pluginfile_urls($instance->intro, 'webservice/pluginfile.php', $cmcontext->id, 'mod_'.$cm->modname, 'intro', null);
+                                $module['description'] = trim(format_text($intro, $instance->introformat, $options, null));   
                             }
                             $baseurl = 'webservice/pluginfile.php';
                             if ($cm->modname == 'panopto') {
@@ -539,6 +542,7 @@ class local_ombiel_webservices extends external_api {
             $retvalue['echo360link'] = "{$CFG->wwwroot}/local/ombiel_webservices/login.php?wstoken={$token}&userid={$USER->id}&echo360id={$course->id}";
         }
         $retvalue['courselink'] = "{$CFG->wwwroot}/local/ombiel_webservices/login.php?wstoken={$token}&userid={$USER->id}&courseid={$course->id}";
+        $retvalue['language'] = current_language();
 
         return $retvalue;
 
@@ -567,6 +571,7 @@ class local_ombiel_webservices extends external_api {
                 'courseformat' => new external_value(PARAM_TEXT, 'Format of course'),
                 'firstsectionvisible' => new external_value(PARAM_BOOL, 'True to hide the first section when using the grid format', VALUE_OPTIONAL),
                 'echo360link' => new external_value(PARAM_URL, 'Link to echocenter', VALUE_OPTIONAL),
+                'language' => new external_value(PARAM_ALPHA, 'prefered language - put at this level for backward compatibility', VALUE_OPTIONAL),
                 'sections' =>
                     new external_multiple_structure(
                         new external_single_structure(
@@ -1095,6 +1100,8 @@ class local_ombiel_webservices extends external_api {
                 }
             }
         }
+        
+        $assignout['language'] = current_language();
         return $assignout;
     }
 
@@ -1153,6 +1160,7 @@ class local_ombiel_webservices extends external_api {
                                 'title' => new external_value(PARAM_TEXT, 'title of file fed back'),
                             )
                     ),  VALUE_DEFAULT, array()),
+                'language' => new external_value(PARAM_ALPHA, 'prefered language - put at this level for backward compatibility', VALUE_OPTIONAL),
             )
         );
     }
@@ -1551,7 +1559,9 @@ class local_ombiel_webservices extends external_api {
                 $event->trigger();
             }
         }
-
+        
+        $courseforum['language'] = current_language();
+        
         return $courseforum;
     }
 
@@ -1578,6 +1588,7 @@ class local_ombiel_webservices extends external_api {
                 'name' => new external_value(PARAM_TEXT, 'name'),
                 'description' => new external_value(PARAM_RAW, 'intro used for forum', VALUE_OPTIONAL),
                 'canpost' => new external_value(PARAM_BOOL, 'Whether this user can add a post'),
+                'language' => new external_value(PARAM_ALPHA, 'prefered language - put at this level for backward compatibility', VALUE_OPTIONAL)
             )
         );
     }
@@ -2203,6 +2214,7 @@ class local_ombiel_webservices extends external_api {
         }
         $chapterout['previd'] = (int) $previd;
         $chapterout['nextid'] = (int) $nextid;
+        $chapterout['language'] = current_language();
 
         if ($CFG->version >= 2014051200) { // Moodle 2.7
             \mod_book\event\chapter_viewed::create_from_chapter($bookrecord, $context, $chapterrecord)->trigger();
@@ -2235,6 +2247,7 @@ class local_ombiel_webservices extends external_api {
                 'content' => new external_value(PARAM_RAW, 'content'),
                 'previd' => new external_value(PARAM_INT, 'chapter id of the previous chapter or zero if first chapter'),
                 'nextid' => new external_value(PARAM_INT, 'chapter id of the next chapter or zero if last chapter'),
+                'language' => new external_value(PARAM_ALPHA, 'prefered language - put at this level for backward compatibility', VALUE_OPTIONAL)
             )
         );
     }
@@ -2303,6 +2316,7 @@ class local_ombiel_webservices extends external_api {
             $event->add_record_snapshot('page', $pagerecord );
             $event->trigger();
         }
+        $page['language'] = current_language();
 
         return $page;
     }
@@ -2330,6 +2344,7 @@ class local_ombiel_webservices extends external_api {
                 'name' => new external_value(PARAM_TEXT, 'name of page', VALUE_OPTIONAL),
                 'description' => new external_value(PARAM_RAW, 'description', VALUE_OPTIONAL),
                 'content' => new external_value(PARAM_RAW, 'content'),
+                'language' => new external_value(PARAM_ALPHA, 'prefered language - put at this level for backward compatibility', VALUE_OPTIONAL)
             )
         );
     }
@@ -2419,6 +2434,7 @@ class local_ombiel_webservices extends external_api {
             }
             $choiceout['options'][] = $optionout;
         }
+        $choiceout['language'] = current_language();
 
         if ($CFG->version >= 2014051200) { // Moodle 2.7
             $eventdata = array();
@@ -2456,6 +2472,7 @@ class local_ombiel_webservices extends external_api {
                 'description' => new external_value(PARAM_RAW, 'intro'),
                 'allowanswer' => new external_value(PARAM_BOOL, 'true if the choice is open for answers from this user'),
                 'showresults' => new external_value(PARAM_BOOL, 'true if the results should be shown'),
+                'language' => new external_value(PARAM_ALPHA, 'prefered language - put at this level for backward compatibility', VALUE_OPTIONAL),
                 'options' => new external_multiple_structure(
                     new external_single_structure(
                         array(

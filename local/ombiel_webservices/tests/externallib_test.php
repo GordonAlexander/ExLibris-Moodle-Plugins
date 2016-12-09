@@ -46,7 +46,6 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         // Check we retrieve the good total number of courses.
         $this->assertEquals(2, count($courses));
 
-
         // Call the external function with other userid
         $usercontext = context_user::instance($user2->id, MUST_EXIST);
 
@@ -194,6 +193,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $this->assertEquals('grid', $sections['courseformat']);
         $this->assertEquals(true, $sections['firstsectionvisible']);
         $this->assertArrayNotHasKey('echo360link', $sections);
+        $this->assertEquals('en', $sections['language']);
 
         $this->assertEquals($visiblesection ->id, $lastsection['id']);
         $this->assertEquals('<img src="'.$CFG->wwwroot.'/webservice/pluginfile.php/'.
@@ -209,8 +209,8 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $cmcontext = context_module::instance($visiblelabelinstance->cmid);
 
         $this->assertEquals($visiblelabelinstance->cmid, $labelout['id']);
-        $this->assertEquals('<div class="text_to_html"><img src="'.$CFG->wwwroot.'/webservice/pluginfile.php/'.
-            $cmcontext->id.'/mod_label/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
+        $this->assertEquals('<div class="no-overflow"><img src="'.$CFG->wwwroot.'/webservice/pluginfile.php/'.
+            $cmcontext->id.'/mod_label/intro/_dummy.jpg" height="20" width="20" /></div>',
             $labelout['description']);
 
         $cmcontext = context_module::instance($resourceinstance->cmid);
@@ -219,8 +219,8 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $this->assertEquals($CFG->wwwroot.'/webservice/pluginfile.php/'.
                 $cmcontext->id.'/mod_resource/content/0/resource1.txt?forcedownload=1',
                 $resourceout['contents'][0]['fileurl']);
-        $this->assertEquals('<div class="text_to_html"><img src="'.$CFG->wwwroot.'/webservice/pluginfile.php/'.
-            $cmcontext->id.'/mod_resource/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
+        $this->assertEquals('<div class="no-overflow"><img src="'.$CFG->wwwroot.'/webservice/pluginfile.php/'.
+            $cmcontext->id.'/mod_resource/intro/_dummy.jpg" height="20" width="20" /></div>',
             $resourceout['description']);
 
         $forumout = next($lastsection['coursemodules']);
@@ -668,6 +668,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $this->assertArrayNotHasKey('gradedby',$assignmentresult);
         $this->assertArrayNotHasKey('feedback',$assignmentresult);
         $this->assertArrayNotHasKey('filefeedback', $assignmentresult);
+        $this->assertEquals('en', $assignmentresult['language']);
 
          /**
          * Set up assignment with two file submissions on online submission
@@ -1472,6 +1473,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
                 .'/mod_forum/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
                 $forum['description']);
         $this->assertEquals(false, $forum['canpost']);
+        $this->assertEquals('en', $forum['language']);
 
         if ($CFG->version >= 2014051200) { // Moodle 2.7
             $events = $sink->get_events();
@@ -2303,6 +2305,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $this->assertEquals('Spirits', $choice['options'][3]['option']);
         $this->assertArrayNotHasKey('count',$choice['options'][0]);
         $this->assertArrayNotHasKey('allow',$choice['options'][0]);
+        $this->assertEquals('en', $choice['language']);
 
         /**
          * Choice 2 - not answered, open, show results after answer, don't show description
@@ -3030,6 +3033,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
                 $chapterresult['content']);
         $this->assertEquals(0, $chapterresult['previd']);
         $this->assertEquals($chapter2->id, $chapterresult['nextid']);
+        $this->assertEquals('en', $chapterresult['language']);
         /**
          * Subchapter
          */
@@ -3170,6 +3174,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
                 $context1->id.'/mod_page/content/'.
                 $pageinstance1->revision.'/_dummy.jpg" height="20" width="20" /><p>paragraph</p></div>',
                 $page['content']);
+        $this->assertEquals('en', $page['language']);
          /**
          * Set up page, print heading, don't print description
          */
