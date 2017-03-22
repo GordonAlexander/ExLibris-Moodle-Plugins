@@ -52,3 +52,7 @@ $string['campusmhostname'] = 'The hostname of your campusM app e.g. m.campusm.or
 $string['campusmaekscreen_key'] = 'campusM AEK login screen';
 $string['campusmaekscreen'] = 'The identifier of the AEK screen used to login to Moodle e.g. S9999';
 $string['pluginnotenabledorconfigured'] = 'TheExLibris webservices local plugin must be enabled and configured in order to launch Moodle';
+$string['configombielallowtokenlogin'] = 'Allow users to log in to the website using a web services token. This also requires the user to have the allowtokenlogin capability. Admin users can not log in this way.';
+$string['ombielallowtokenlogin'] = 'Allow token login';
+$string['ombiel_webservices:createtimelimitedtoken'] = 'Create time limited token';
+$string['ombiel_webservices:allowtokenlogin'] = 'Allow to log in to the website using a token';
