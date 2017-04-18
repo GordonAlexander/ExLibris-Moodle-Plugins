@@ -411,190 +411,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
 
 
      }
-     public function test_get_user_assignments() {
-        global $CFG, $DB, $USER;
-
-        $this->resetAfterTest(true);
-
-        $course1 = self::getDataGenerator()->create_course();
-        $course2 = self::getDataGenerator()->create_course();
-        $user1 = self::getDataGenerator()->create_user();
-        $user2 = self::getDataGenerator()->create_user();
-        $user3 = self::getDataGenerator()->create_user();
-        $this->setUser($user1);
-        $this->getDataGenerator()->enrol_user($user1->id, $course1->id);
-        $this->getDataGenerator()->enrol_user($user1->id, $course2->id);
-
-        $coursecontext = context_course::instance($course1->id);
-
-        // stop cmid being the same as instance id (better test)
-        $labelgenerator = $this->getDataGenerator()->get_plugin_generator('mod_label');
-        $options = array(
-            'course'=>$course1->id,
-        );
-        $labelgenerator->create_instance($options);
-        /**
-         * Create assignments
-         */
-        $assignmentgenerator = $this->getDataGenerator()->get_plugin_generator('mod_assign');
-
-        $options = array(
-            'name'=>'Assignment 1',
-            'course'=>$course1->id,
-            'intro'=>'<img src="@@PLUGINFILE@@/_dummy.jpg" height="20" width="20" />',
-        );
-        $assignment1instance = $assignmentgenerator->create_instance($options);
-
-        $submission = new stdClass;
-        $submission->assignment = $assignment1instance->id;
-        $submission->userid = $user1->id;
-        $submission->status = ASSIGN_SUBMISSION_STATUS_SUBMITTED;
-        $DB->insert_record('assign_submission', $submission);
-
-        $sitecontext = context_system::instance();
-        $roleid = create_role('Calendar', 'Calendar', 'dummy role description');
-        assign_capability('moodle/calendar:manageentries', CAP_ALLOW, $roleid, $sitecontext);
-        role_assign($roleid, $USER->id, $sitecontext);
-        $options = array(
-            'name'=>'Assignment 2',
-            'course'=>$course2->id,
-            'intro'=>'<img src="@@PLUGINFILE@@/_dummy.jpg" height="20" width="20" />',
-            'duedate'=>1642550401,
-        );
-        $assignment2instance = $assignmentgenerator->create_instance($options);
-
-        $cm2 = $DB->get_record('course_modules', array('id'=>$assignment2instance->cmid));
-        $cm2->showdescription = 1;
-        $DB->update_record('course_modules', $cm2);
-        /**
-         * Default user id - user has assignments
-         */
-        $assignments = local_ombiel_webservices::get_user_assignments();
-        $assignments = external_api::clean_returnvalue(local_ombiel_webservices::get_user_assignments_returns(), $assignments);
-
-        $this->assertEquals(2, count($assignments));
-        $this->assertEquals('Assignment 2', $assignments[0]['name']);
-        $cmcontext = context_module::instance($assignment2instance->cmid);
-        $this->assertEquals('<div class="text_to_html"><img src="'.$CFG->wwwroot.
-                '/webservice/pluginfile.php/'.$cmcontext->id.
-                '/mod_assign/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
-                $assignments[0]['description']);
-        $this->assertEquals($course2->id, $assignments[0]['courseid']);
-        $this->assertEquals(1642550401, $assignments[0]['deadline']);
-        $this->assertEquals(1, $assignments[1]['status']);
-        /**
-         * Call with logged in user id - user has assignments
-         */
-        $assignments = local_ombiel_webservices::get_user_assignments($user1->id);
-        $assignments = external_api::clean_returnvalue(local_ombiel_webservices::get_user_assignments_returns(), $assignments);
-
-        $this->assertEquals(2, count($assignments));
-        /**
-         * Call with another persons user id with authority- they have no assignments
-         */
-        $usercontext = context_user::instance($user2->id, MUST_EXIST);
-
-        $roleid = create_role('Dummy role', 'dummyrole', 'dummy role description');
-        assign_capability('moodle/user:viewdetails', CAP_ALLOW, $roleid, $usercontext);
-        role_assign($roleid, $USER->id, $usercontext);
-        accesslib_clear_all_caches_for_unit_testing();
-        $assignments = local_ombiel_webservices::get_user_assignments($user2->id);
-        $assignments = external_api::clean_returnvalue(local_ombiel_webservices::get_user_assignments_returns(), $assignments);
-
-        $this->assertSame(array(), $assignments);
-        /**
-         * Call with another persons user id without authority
-         */
-        $this->setExpectedException('moodle_exception');
-        $courses = local_ombiel_webservices::get_user_assignments($user3->id);
-
-     }
-     public function test_get_course_assignments() {
-        global $CFG, $DB, $USER;
-
-        $this->resetAfterTest(true);
-
-        $course1 = self::getDataGenerator()->create_course();
-        $course2 = self::getDataGenerator()->create_course();
-        $course3 = self::getDataGenerator()->create_course();
-        $user1 = self::getDataGenerator()->create_user();
-        $this->setUser($user1);
-        $this->getDataGenerator()->enrol_user($user1->id, $course1->id);
-        $this->getDataGenerator()->enrol_user($user1->id, $course2->id);
-
-        $coursecontext = context_course::instance($course1->id);
-
-        // stop cmid being the same as instance id (better test)
-        $labelgenerator = $this->getDataGenerator()->get_plugin_generator('mod_label');
-        $options = array(
-            'course'=>$course1->id,
-        );
-        $labelgenerator->create_instance($options);
-         /**
-         * Set up assignments
-         */
-        $assignmentgenerator = $this->getDataGenerator()->get_plugin_generator('mod_assign');
-
-        $options = array(
-            'name'=>'Assignment 1',
-            'course'=>$course1->id,
-            'intro'=>'<img src="@@PLUGINFILE@@/_dummy.jpg" height="20" width="20" />',
-        );
-        $assignment1instance = $assignmentgenerator->create_instance($options);
-
-        $submission = new stdClass;
-        $submission->assignment = $assignment1instance->id;
-        $submission->userid = $user1->id;
-        $submission->status = ASSIGN_SUBMISSION_STATUS_SUBMITTED;
-        $DB->insert_record('assign_submission', $submission);
-
-        $sitecontext = context_system::instance();
-        $roleid = create_role('Calendar', 'Calendar', 'dummy role description');
-        assign_capability('moodle/calendar:manageentries', CAP_ALLOW, $roleid, $sitecontext);
-        role_assign($roleid, $USER->id, $sitecontext);
-        $options = array(
-            'name'=>'Assignment 2',
-            'course'=>$course1->id,
-            'intro'=>'<img src="@@PLUGINFILE@@/_dummy.jpg" height="20" width="20" />',
-            'duedate'=>1642550401,
-        );
-        $assignment2instance = $assignmentgenerator->create_instance($options);
-
-        $cm2 = $DB->get_record('course_modules', array('id'=>$assignment2instance->cmid));
-        $cm2->showdescription = 1;
-        $DB->update_record('course_modules', $cm2);
-        /**
-         * Course has assignments - user is enrolled
-         */
-        $assignments = local_ombiel_webservices::get_course_assignments($course1->id);
-        $assignments = external_api::clean_returnvalue(local_ombiel_webservices::get_course_assignments_returns(), $assignments);
-
-        $this->assertEquals(2, count($assignments));
-        $this->assertArrayNotHasKey('description', $assignments[0]);
-        $this->assertEquals('Assignment 2', $assignments[1]['name']);
-
-        $cmcontext = context_module::instance($assignment2instance->cmid);
-        $this->assertEquals('<div class="text_to_html"><img src="'.$CFG->wwwroot.
-                '/webservice/pluginfile.php/'.$cmcontext->id
-                .'/mod_assign/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
-                $assignments[1]['description']);
-        $this->assertEquals($course1->id, $assignments[1]['courseid']);
-        $this->assertEquals(1642550401, $assignments[1]['deadline']);
-        $this->assertEquals(1, $assignments[0]['status']);
-        /**
-         * Course has no assignments user is enrolled
-         */
-        $assignments = local_ombiel_webservices::get_course_assignments($course2->id);
-        $assignments = external_api::clean_returnvalue(local_ombiel_webservices::get_course_assignments_returns(), $assignments);
-
-        $this->assertSame(array(), $assignments);
-        /**
-         * Course has no assignments user is not enrolled
-         */
-        $this->setExpectedException('moodle_exception');
-        $assignments = local_ombiel_webservices::get_course_assignments($course3->id);
-
-     }
+     
      public function test_get_cm_assignment() {
          global $CFG, $DB, $USER;
 
@@ -1350,76 +1167,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $grades = local_ombiel_webservices::get_course_grades($course1->id, $user1->id);
 
      }
-     public function test_get_course_forums() {
-        global $CFG, $DB, $USER;
-
-        $this->resetAfterTest(true);
-
-        $course1 = self::getDataGenerator()->create_course();
-        $course2 = self::getDataGenerator()->create_course();
-        $course3 = self::getDataGenerator()->create_course();
-        $user1 = self::getDataGenerator()->create_user();
-        $this->setUser($user1);
-        $this->getDataGenerator()->enrol_user($user1->id, $course1->id);
-        $this->getDataGenerator()->enrol_user($user1->id, $course2->id);
-
-        $coursecontext = context_course::instance($course1->id);
-
-         /**
-         * Set up forums
-         */
-        $forumgenerator = $this->getDataGenerator()->get_plugin_generator('mod_forum');
-
-        $options = array(
-            'course'=>$course1->id,
-            'name'=>'Forum 1',
-            'intro'=>'<img src="@@PLUGINFILE@@/_dummy.jpg" height="20" width="20" />',
-        );
-        $forum1instance = $forumgenerator->create_instance($options);
-
-        $options = array(
-            'course'=>$course1->id,
-            'intro'=>'<img src="@@PLUGINFILE@@/_dummy.jpg" height="20" width="20" />',
-        );
-        $forum2instance = $forumgenerator->create_instance($options);
-
-        $cm2 = $DB->get_record('course_modules', array('id'=>$forum2instance->cmid));
-        $cm2->showdescription = 1;
-        $DB->update_record('course_modules', $cm2);
-
-        /**
-         * Course has forums - user is enrolled
-         */
-        $forums = local_ombiel_webservices::get_course_forums($course1->id);
-        $forums = external_api::clean_returnvalue(local_ombiel_webservices::get_course_forums_returns(), $forums);
-
-        $this->assertEquals(2, count($forums));
-
-        $this->assertEquals('Forum 2', $forums[1]['name']);
-
-        $cm2context = context_module::instance($forum2instance->cmid);
-        $this->assertEquals('<div class="text_to_html"><img src="'.$CFG->wwwroot.
-                '/webservice/pluginfile.php/'.$cm2context->id
-                .'/mod_forum/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
-                $forums[1]['description']);
-        $this->assertEquals($forum2instance->cmid, $forums[1]['id']);
-
-        /**
-         * Course has no forums user is enrolled
-         */
-        $forums = local_ombiel_webservices::get_course_forums($course2->id);
-        $forums = external_api::clean_returnvalue(local_ombiel_webservices::get_course_forums_returns(), $forums);
-
-        $this->assertSame(array(), $forums);
-        /**
-         * Course has no forums user is not enrolled
-         */
-        $forums = local_ombiel_webservices::get_course_forums($course3->id);
-        $forums = external_api::clean_returnvalue(local_ombiel_webservices::get_course_forums_returns(), $forums);
-
-        $this->assertSame(array(), $forums);
-
-     }
+     
      public function test_get_cm_forum() {
          global $CFG, $DB, $USER;
 
@@ -2716,17 +2464,29 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
 
         if ($CFG->version >= 2014051200) { // Moodle 2.7
             $events = $sink->get_events();
+            
             $eventstotest = array();
             foreach ($events as $event) {
 
-                if (is_a($event,'\mod_choice\event\answer_submitted')) {
-                    $eventstotest[] = $event;
+                if ($CFG->version >= 2016120500) { // Moodle 3.2
+                    // event name changed in Moodle 3.2
+                    if (is_a($event,'\mod_choice\event\answer_created')) {
+                        $eventstotest[] = $event;
+                    }
+                } else {
+                    if (is_a($event,'\mod_choice\event\answer_submitted')) {
+                        $eventstotest[] = $event;
+                    }
                 }
             }
             $cmcontext = context_module::instance($choiceinstance1->cmid);
             $this->assertCount(1, $eventstotest);
             $this->assertEquals('mod_choice',$eventstotest[0]->component);
-            $this->assertEquals('submitted',$eventstotest[0]->action);
+            if ($CFG->version >= 2016120500) { // Moodle 3.2
+                $this->assertEquals('created',$eventstotest[0]->action);
+            } else {
+                $this->assertEquals('submitted',$eventstotest[0]->action);
+            }
             $this->assertEquals($cmcontext->id,$eventstotest[0]->contextid);
             $this->assertEquals($user1->id,$eventstotest[0]->userid);
             $this->assertEquals($course1->id,$eventstotest[0]->courseid);
@@ -3229,163 +2989,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $page = local_ombiel_webservices::get_cm_page($pageinstance->cmid);
 
      }
-     public function test_get_course_quizzes() {
-        global $CFG, $DB, $USER;
 
-        $this->resetAfterTest(true);
-
-        $course1 = self::getDataGenerator()->create_course();
-        $course2 = self::getDataGenerator()->create_course();
-        $course3 = self::getDataGenerator()->create_course();
-        $user1 = self::getDataGenerator()->create_user();
-        $this->setUser($user1);
-        $this->getDataGenerator()->enrol_user($user1->id, $course1->id);
-        $this->getDataGenerator()->enrol_user($user1->id, $course2->id);
-
-        $coursecontext = context_course::instance($course1->id);
-
-        $_GET['wstoken'] = md5('test');
-        // stop cmid being the same as instance id (better test)
-        $labelgenerator = $this->getDataGenerator()->get_plugin_generator('mod_label');
-        $options = array(
-            'course'=>$course1->id,
-        );
-        $labelgenerator->create_instance($options);
-         /**
-         * Set up quizzes
-         */
-        $quizgenerator = $this->getDataGenerator()->get_plugin_generator('mod_quiz');
-
-        $options = array(
-            'name'=>'Quiz 1',
-            'course'=>$course1->id,
-            'intro'=>'<img src="@@PLUGINFILE@@/_dummy.jpg" height="20" width="20" />',
-        );
-
-        $quiz1instance = $quizgenerator->create_instance($options);
-
-        $options = array(
-            'name'=>'Quiz 2',
-            'course'=>$course1->id,
-            'intro'=>'<img src="@@PLUGINFILE@@/_dummy.jpg" height="20" width="20" />',
-            'duedate'=>1642550401,
-        );
-        $quiz2instance = $quizgenerator->create_instance($options);
-
-        $cm2 = $DB->get_record('course_modules', array('id'=>$quiz2instance->cmid));
-        $cm2->showdescription = 1;
-        $DB->update_record('course_modules', $cm2);
-        /**
-         * Course has quizzes - user is enrolled
-         */
-        $response = local_ombiel_webservices::get_course_quizzes($course1->id);
-        $response = external_api::clean_returnvalue(local_ombiel_webservices::get_course_quizzes_returns(), $response);
-
-        $this->assertEquals(2, count($response));
-        $this->assertArrayNotHasKey('description', $response['quizzes'][0]);
-        $this->assertEquals($quiz2instance->id, $response['quizzes'][1]['id']);
-        $this->assertEquals($quiz2instance->cmid, $response['quizzes'][1]['coursemoduleid']);
-        $this->assertEquals('Quiz 2', $response['quizzes'][1]['name']);
-        $this->assertEquals($CFG->wwwroot.'/local/ombiel_webservices/login.php?wstoken='.md5('test').'&userid='.$user1->id.'&cmid=',$response['baselink']);
-
-        $cmcontext = context_module::instance($quiz2instance->cmid);
-        $this->assertEquals('<div class="text_to_html"><img src="'.$CFG->wwwroot.
-                '/webservice/pluginfile.php/'.$cmcontext->id
-                .'/mod_quiz/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /></div>',
-                $response['quizzes'][1]['description']);
-        $this->assertEquals($course1->id, $response['quizzes'][1]['courseid']);
-        /**
-         * Course has no quizzes user is enrolled
-         */
-        $response = local_ombiel_webservices::get_course_quizzes($course2->id);
-        $response = external_api::clean_returnvalue(local_ombiel_webservices::get_course_quizzes_returns(), $response);
-
-        $this->assertSame(array('baselink' => 'http://www.example.com/moodle/local/ombiel_webservices/login.php?wstoken=098f6bcd4621d373cade4e832627b4f6&userid='.
-            $user1->id . '&cmid=','quizzes'=>array()), $response);
-
-        /**
-         * Course has no quizzes user is not enrolled
-         */
-        $this->setExpectedException('moodle_exception');
-        $response = local_ombiel_webservices::get_course_quizzes($course3->id);
-
-     }
-
-     public function test_get_course_resources() {
-        global $CFG, $DB, $USER;
-
-        $this->resetAfterTest(true);
-
-        $course1 = self::getDataGenerator()->create_course();
-        $course2 = self::getDataGenerator()->create_course();
-        $course3 = self::getDataGenerator()->create_course();
-        $user1 = self::getDataGenerator()->create_user();
-        $this->setUser($user1);
-        $this->getDataGenerator()->enrol_user($user1->id, $course1->id);
-        $this->getDataGenerator()->enrol_user($user1->id, $course2->id);
-
-
-        if ($CFG->version >= 2013051400) { // resource generator added in 2.5
-            /**
-            * Set up resources
-            */
-           $resourcegenerator = $this->getDataGenerator()->get_plugin_generator('mod_resource');
-
-           $options = array(
-               'course'=>$course1->id,
-               'intro'=>'<img src="@@PLUGINFILE@@/_dummy.jpg" height="20" width="20" />',
-           );
-           $resource1instance = $resourcegenerator->create_instance($options);
-
-           $options = array(
-               'course'=>$course1->id,
-               'intro'=>'<img src="@@PLUGINFILE@@/_dummy.jpg" height="20" width="20" />',
-           );
-           $resource2instance = $resourcegenerator->create_instance($options);
-
-           $cm2 = $DB->get_record('course_modules', array('id'=>$resource2instance->cmid));
-           $cm2->showdescription = 1;
-           $cm2->availablefrom = 1642550401;
-           $DB->update_record('course_modules', $cm2);
-
-           /**
-            * Course has resources - user is enrolled
-            */
-           $resources = local_ombiel_webservices::get_course_resources($course1->id);
-           $resources = external_api::clean_returnvalue(local_ombiel_webservices::get_course_resources_returns(), $resources);
-
-           $this->assertEquals(2, count($resources));
-
-           $this->assertEquals($resource1instance->cmid, $resources[0]['id']);
-           $cm1context = context_module::instance($resource1instance->cmid);
-           $this->assertEquals('File 1', $resources[0]['name']);
-           $this->assertEquals($CFG->wwwroot.'/webservice/pluginfile.php/'.
-                   $cm1context->id.'/mod_resource/content/0/resource1.txt?forcedownload=1',
-                   $resources[0]['contents'][0]['fileurl']);
-
-           $this->assertEquals($resource2instance->cmid, $resources[1]['id']);
-           $cm2context = context_module::instance($resource2instance->cmid);
-           $this->assertEquals('File 2', $resources[1]['name']);
-           $this->assertEquals($CFG->wwwroot.'/webservice/pluginfile.php/'.
-                   $cm2context->id.'/mod_resource/content/0/resource2.txt?forcedownload=1',
-                   $resources[1]['contents'][0]['fileurl']);
-
-        }
-        /**
-         * Course has no resources user is enrolled
-         */
-        $resources = local_ombiel_webservices::get_course_resources($course2->id);
-        $resources = external_api::clean_returnvalue(local_ombiel_webservices::get_course_resources_returns(), $resources);
-
-        $this->assertSame(array(), $resources);
-        /**
-         * Course has no resources user is not enrolled
-         */
-        $this->setExpectedException('moodle_exception');
-        $resources = local_ombiel_webservices::get_course_resources($course3->id);
-        $resources = external_api::clean_returnvalue(local_ombiel_webservices::get_course_resources_returns(), $resources);
-
-     }
      public function test_get_user_messages() {
         global $CFG, $DB, $USER;
 
