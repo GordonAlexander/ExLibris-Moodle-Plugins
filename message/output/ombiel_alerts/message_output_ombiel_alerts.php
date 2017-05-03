@@ -86,8 +86,9 @@ class message_output_ombiel_alerts extends message_output {
               ),
           'ssl'=>array(
               'SNI_enabled'=>true,
+              'peer_name'=>$parsedEndpoint['host'],
               'SNI_server_name'=>$parsedEndpoint['host'],
-              ),
+            ),
         );
         
         if (!empty($CFG->proxyhost)) {
