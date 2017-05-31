@@ -216,6 +216,8 @@ $services = array(
             'ombiel_get_course_sections',
             'ombiel_get_section_content',
             'ombiel_get_cm_assignment',
+            'mod_assign_get_submission_status',
+            'core_comment_get_comments',
             'ombiel_get_user_grades',
             'ombiel_get_course_grades',
             'ombiel_get_user_forums',

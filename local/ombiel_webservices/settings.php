@@ -16,7 +16,7 @@
 
 /**
  * Plugin settings
- *
+ *q
  * @package    ombiel_webservices
  * @copyright  2016 ExLibris Group
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later

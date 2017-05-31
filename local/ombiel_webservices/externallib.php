@@ -812,6 +812,7 @@ class local_ombiel_webservices extends external_api {
         $assign = new assign($context, $cm, $course);
 
         $assignout = array();
+        $assignout['id'] = $cm->instance;
         $assignout['name'] = format_string($instance->name);
         $assignout['sectionname'] = $section->name;
 
@@ -820,107 +821,6 @@ class local_ombiel_webservices extends external_api {
         );
 
         $assignout['deadline'] = $instance->duedate;
-
-        $submission = $assign->get_user_submission($USER->id, true);
-
-        if (empty($submission)) {
-            $assignout['submissionstatus'] = 'new';
-        } else {
-            if (empty($submission->status)) {
-              $assignout['submissionstatus'] = 'new';
-            } else {
-              $assignout['submissionstatus'] = $submission->status;
-            }
-
-            if ($DB->get_record('assignsubmission_onlinetext', array('submission'=>$submission->id))) {
-
-                $onlinetextplugin = $assign->get_submission_plugin_by_type('onlinetext');
-                $onlinetext = $onlinetextplugin->view($submission);
-
-                if (!empty($onlinetext)) {
-                    $assignout['onlinesubmission'] = str_replace($CFG->wwwroot.'/pluginfile.php',$CFG->wwwroot.'/webservice/pluginfile.php',$onlinetext);
-                }
-            }
-
-            $files = new assign_files($context, $submission->id, ASSIGNSUBMISSION_FILE_FILEAREA, 'assignsubmission_file');
-
-            if (!empty($files->dir['files'])) {
-                $assignout['filesubmissions'] = array();
-                foreach ($files->dir['files'] as $filedescription) {
-                    $title = strip_tags($filedescription->fileurl);
-                    $anchor = new SimpleXMLElement($filedescription->fileurl);
-                    $href = str_replace($CFG->wwwroot.'/pluginfile.php',$CFG->wwwroot.'/webservice/pluginfile.php',(string) $anchor['href']);
-                    $parsedurl = parse_url($href);
-                    $name = basename($parsedurl['path']);
-                    $assignout['filesubmissions'][] = array('link'=>$href,'name'=>$name,'title'=>$title);
-                }
-            }
-        }
-
-        $options = new stdClass();
-        $options->area    = 'submission_comments';
-        $options->course    = $course;
-        $options->context = $context;
-        $options->itemid  = $submission->id;
-        $options->component = 'assignsubmission_comments';
-        $options->showcount = true;
-        $options->displaycancel = true;
-
-        $comment = new comment($options);
-
-        $commentList = $comment->get_comments();
-
-        if (!empty($commentList)) {
-            foreach($commentList as $comment) {
-                $assignout['comments'][] = array('content'=>$comment->content);
-            }
-        }
-
-        $flags = $assign->get_user_flags($USER->id, false);
-
-        $now = time();
-
-        if ($flags && $flags->locked) {
-            $assignout['cansubmit'] = false;
-        } else {
-            if (empty($assign->get_instance()->allowsubmissionsfromdate) || $assign->get_instance()->allowsubmissionsfromdate < $now) {
-                if (empty($assign->get_instance()->cutoffdate) || $assign->get_instance()->cutoffdate > $now) {
-                    $assignout['cansubmit'] = true;
-                } elseif ($flags && $flags->extensionduedate > $now) {
-                    $assignout['cansubmit'] = true;
-                } else {
-                    $assignout['cansubmit'] = false;
-                }
-            } else {
-                $assignout['cansubmit'] = false;
-            }
-        }
-
-        if (empty($assign->get_instance()->markingworkflow) or empty($flags) or $flags->workflowstate == ASSIGN_MARKING_WORKFLOW_STATE_RELEASED) {
-            $grade  = $assign->get_user_grade($USER->id, false);
-
-            if (!empty($grade)) {
-                $assignout['grade'] = round($grade->grade,2);
-                $assignout['gradedon'] = $grade->timemodified;
-                $grader = $DB->get_record('user', array('id'=>$grade->grader));
-                $assignout['gradedby'] = fullname($grader);
-                $feedbackcommentsplugin = $assign->get_feedback_plugin_by_type('comments');
-                $commentobject = $feedbackcommentsplugin->get_feedback_comments($grade->id);
-                $assignout['feedback'] = $commentobject->commenttext;
-                $feedbackfiles = new assign_files($context, $grade->id, ASSIGNFEEDBACK_FILE_FILEAREA, 'assignfeedback_file');
-                if (!empty($feedbackfiles->dir['files'])) {
-                    $assignout['filefeedback'] = array();
-                    foreach ($feedbackfiles->dir['files'] as $filedescription) {
-                        $title = strip_tags($filedescription->fileurl);
-                        $anchor = new SimpleXMLElement($filedescription->fileurl);
-                        $href = str_replace($CFG->wwwroot.'/pluginfile.php',$CFG->wwwroot.'/webservice/pluginfile.php',(string) $anchor['href']);
-                        $parsedurl = parse_url($href);
-                        $name = basename($parsedurl['path']);
-                        $assignout['filefeedback'][] = array('link'=>$href,'name'=>$name,'title'=>$title);
-                    }
-                }
-            }
-        }
         
         $assignout['language'] = current_language();
         return $assignout;
@@ -945,42 +845,11 @@ class local_ombiel_webservices extends external_api {
     public static function get_cm_assignment_returns() {
         return new external_single_structure(
             array(
+                'id' => new external_value(PARAM_INT, 'assign_id'),
                 'name' => new external_value(PARAM_TEXT, 'name of assignment'),
                 'description' => new external_value(PARAM_RAW, 'intro used for assignment', VALUE_OPTIONAL),
                 'sectionname' => new external_value(PARAM_TEXT, 'name of the section, used to put files in the correct place', VALUE_OPTIONAL),
-                'deadline' => new external_value(PARAM_INT, 'timestamp of the deadline for the course'),
-                'submissionstatus' => new external_value(PARAM_TEXT, 'has the user created a submission for the assignment'),
-                'onlinesubmission' => new external_value(PARAM_RAW, 'rich text submitted', VALUE_OPTIONAL),
-                'filesubmissions' =>
-                    new external_multiple_structure(
-                        new external_single_structure(
-                            array(
-                                'link' => new external_value(PARAM_TEXT, 'link to file submitted'),
-                                'name' => new external_value(PARAM_TEXT, 'name of file submitted'),
-                                'title' => new external_value(PARAM_TEXT, 'title of file submitted'),
-                            )
-                    ),  VALUE_DEFAULT, array()),
-                'comments' =>
-                    new external_multiple_structure(
-                        new external_single_structure(
-                            array(
-                                'content' => new external_value(PARAM_RAW, 'submission comment')
-                            )
-                    ),  VALUE_DEFAULT, array()),
-                'cansubmit' => new external_value(PARAM_TEXT, 'true if submissions are being accepted'),
-                'grade' => new external_value(PARAM_TEXT, 'Grade', VALUE_OPTIONAL),
-                'gradedon' => new external_value(PARAM_INT, 'timestamp of grade', VALUE_OPTIONAL),
-                'gradedby' => new external_value(PARAM_TEXT, 'name of grader', VALUE_OPTIONAL),
-                'feedback' => new external_value(PARAM_RAW, 'feedback from grader', VALUE_OPTIONAL),
-                'filefeedback' =>
-                    new external_multiple_structure(
-                        new external_single_structure(
-                            array(
-                                'link' => new external_value(PARAM_TEXT, 'link to file fed back'),
-                                'name' => new external_value(PARAM_TEXT, 'name of file fed back'),
-                                'title' => new external_value(PARAM_TEXT, 'title of file fed back'),
-                            )
-                    ),  VALUE_DEFAULT, array()),
+                'deadline' => new external_value(PARAM_INT, 'timestamp of the deadline for the course'),              
                 'language' => new external_value(PARAM_ALPHA, 'prefered language - put at this level for backward compatibility', VALUE_OPTIONAL),
             )
         );
