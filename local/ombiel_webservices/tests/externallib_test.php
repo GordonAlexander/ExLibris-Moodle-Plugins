@@ -69,6 +69,14 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
     public function test_get_course_sections() {
         global $CFG, $DB, $USER;
 
+        if ($CFG->version >= 2017051500) {
+            //From Moodle 3.3 onwards this is deprecated
+            // use function get_course_contents in course/externallib.php
+            // service core_course_get_contents
+            return true;
+        }
+
+
         $this->resetAfterTest(true);
 
         $CFG->debug = 0; // Don't run with debug it creates spurious output from the grid format plugin
@@ -411,7 +419,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
 
 
      }
-     
+
      public function test_get_cm_assignment() {
          global $CFG, $DB, $USER;
 
@@ -784,7 +792,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         $grades = local_ombiel_webservices::get_course_grades($course1->id, $user1->id);
 
      }
-     
+
      public function test_get_cm_forum() {
          global $CFG, $DB, $USER;
 
@@ -2081,7 +2089,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
 
         if ($CFG->version >= 2014051200) { // Moodle 2.7
             $events = $sink->get_events();
-            
+
             $eventstotest = array();
             foreach ($events as $event) {
 
@@ -2544,10 +2552,10 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
         }
 
         $this->assertArrayNotHasKey('name',$page);
-        $this->assertEquals('<div class="text_to_html">First Page intro:<img src="http://www.example.com/moodle/webservice/pluginfile.php/'.
+        $this->assertEquals('<div class="text_to_html">First Page intro:<img src="' . $CFG->wwwroot . '/webservice/pluginfile.php/'.
             $context1->id.'/mod_page/intro/_dummy.jpg" height="20" width="20" alt="_dummy.jpg" /><p>paragraph</p></div>',
             $page['description']);
-        $this->assertContains('<div class="text_to_html">First Page content:<img src="http://www.example.com/moodle/webservice/pluginfile.php/'.
+        $this->assertContains('<div class="text_to_html">First Page content:<img src="' . $CFG->wwwroot . '/webservice/pluginfile.php/'.
                 $context1->id.'/mod_page/content/'.
                 $pageinstance1->revision.'/_dummy.jpg" height="20" width="20" /><p>paragraph</p></div>',
                 $page['content']);
@@ -2573,7 +2581,7 @@ class local_ombiel_webservices_testcase extends advanced_testcase {
 
         $this->assertEquals('Page 2', $page['name']);
         $this->assertArrayNotHasKey('description',$page);
-        $this->assertEquals('<div class="no-overflow"><div class="text_to_html">Second Page content:<img src="http://www.example.com/moodle/webservice/pluginfile.php/'.
+        $this->assertEquals('<div class="no-overflow"><div class="text_to_html">Second Page content:<img src="' . $CFG->wwwroot . '/webservice/pluginfile.php/'.
                 $context2->id.'/mod_page/content/'.
                 $pageinstance2->revision.'/_dummy.jpg" height="20" width="20" /><p>paragraph</p></div></div>',
             $page['content']);

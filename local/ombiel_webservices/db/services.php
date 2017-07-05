@@ -213,7 +213,8 @@ $services = array(
         'functions' => array ('ombiel_get_course_sections',
             'ombiel_get_user_dashboard',
             'ombiel_get_user_courses',
-            'ombiel_get_course_sections',
+            'ombiel_get_course_sections', // From Moodle 3.3 this is deprecated use core_course_get_contents
+            'core_course_get_contents',
             'ombiel_get_section_content',
             'ombiel_get_cm_assignment',
             'mod_assign_get_submission_status',

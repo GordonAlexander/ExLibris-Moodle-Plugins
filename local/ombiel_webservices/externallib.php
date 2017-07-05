@@ -370,7 +370,7 @@ class local_ombiel_webservices extends external_api {
      */
     public static function  get_user_courses($userid = null) {
         global $CFG, $USER;
-        
+
         if (empty($userid)) {
             $userid = $USER->id;
         } elseif ($userid != $USER->id) {
@@ -381,10 +381,10 @@ class local_ombiel_webservices extends external_api {
         }
 
         $my_courses = enrol_get_users_courses($userid, true, 'id, fullname', 'sortorder ASC, fullname ASC');
-        
+
         $settings = external_settings::get_instance();
         $settings->set_filter(true);
-        
+
         $usercourses = array();
         if (!empty($my_courses)) {
             foreach ($my_courses as $course) {
@@ -427,7 +427,7 @@ class local_ombiel_webservices extends external_api {
                     'id' => new external_value(PARAM_INT, 'course id'),
                     'fullname' => new external_value(PARAM_TEXT, 'course full name')
                 )
-            ), 'List of user courses.'            
+            ), 'List of user courses.'
         );
     }
 
@@ -442,6 +442,13 @@ class local_ombiel_webservices extends external_api {
     public static function get_course_sections($courseid) {
 
         global $CFG, $DB, $USER, $PAGE;
+        
+        if ($CFG->version >= 2017051500) {
+            //From Moodle 3.3 onwards this is deprecated
+            // use function get_course_contents in course/externallib.php
+            // service core_course_get_contents
+            throw new moodle_exception('Depreciated use core_course_get_contents', 'webservice');
+        }
 
         require_once($CFG->dirroot . "/course/lib.php");
 
@@ -498,7 +505,7 @@ class local_ombiel_webservices extends external_api {
                                 $cmcontext = context_module::instance($cm->id);
                                 $options = array('noclean' => true, 'para' => false, 'filter' => true, 'context' => $cmcontext, 'overflowdiv' => true);
                                 $intro = file_rewrite_pluginfile_urls($instance->intro, 'webservice/pluginfile.php', $cmcontext->id, 'mod_'.$cm->modname, 'intro', null);
-                                $module['description'] = trim(format_text($intro, $instance->introformat, $options, null));   
+                                $module['description'] = trim(format_text($intro, $instance->introformat, $options, null));
                             }
                             $baseurl = 'webservice/pluginfile.php';
                             if ($cm->modname == 'panopto') {
@@ -510,7 +517,7 @@ class local_ombiel_webservices extends external_api {
                                 require_once($CFG->dirroot . '/mod/equella/common/lib.php');
                                 $module['contents'][0]['type'] = 'equella';
                                 $module['contents'][0]['content'] = urlencode(equella_appendtoken($instance->url));
-                                $module['contents'][0]['timemodified'] = $instance->timemodified;                              
+                                $module['contents'][0]['timemodified'] = $instance->timemodified;
                             } else {
                                 require_once($CFG->dirroot . '/mod/' . $cm->modname . '/lib.php');
                                 $getcontentfunction = $cm->modname . '_export_contents';
@@ -821,7 +828,7 @@ class local_ombiel_webservices extends external_api {
         );
 
         $assignout['deadline'] = $instance->duedate;
-        
+
         $assignout['language'] = current_language();
         return $assignout;
     }
@@ -849,7 +856,7 @@ class local_ombiel_webservices extends external_api {
                 'name' => new external_value(PARAM_TEXT, 'name of assignment'),
                 'description' => new external_value(PARAM_RAW, 'intro used for assignment', VALUE_OPTIONAL),
                 'sectionname' => new external_value(PARAM_TEXT, 'name of the section, used to put files in the correct place', VALUE_OPTIONAL),
-                'deadline' => new external_value(PARAM_INT, 'timestamp of the deadline for the course'),              
+                'deadline' => new external_value(PARAM_INT, 'timestamp of the deadline for the course'),
                 'language' => new external_value(PARAM_ALPHA, 'prefered language - put at this level for backward compatibility', VALUE_OPTIONAL),
             )
         );
@@ -1183,9 +1190,9 @@ class local_ombiel_webservices extends external_api {
                 $event->trigger();
             }
         }
-        
+
         $courseforum['language'] = current_language();
-        
+
         return $courseforum;
     }
 
