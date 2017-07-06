@@ -210,7 +210,9 @@ $functions = array (
 );
 $services = array(
     'campusm' => array(
-        'functions' => array ('ombiel_get_course_sections',
+        'functions' => array (
+            'core_webservice_get_site_info',
+            'ombiel_get_course_sections',
             'ombiel_get_user_dashboard',
             'ombiel_get_user_courses',
             'ombiel_get_course_sections', // From Moodle 3.3 this is deprecated use core_course_get_contents
