@@ -36,6 +36,11 @@ Unzip the plugin and put it in the local folder. If the plugin is in the correct
 3. Set 'Create a web service token' to 'Allow'
 4. Set 'Web service: SOAP protocol' to 'Allow'
 
+##### Testing the Web service
+
+1. Get the token by visiting [Moodle document root]/login/token.php?username=<username>&password=<password>&service=campusm 
+2. If you have sucessfully retrieved a token check that you get a WSDL (XML document) at [Moodle document root]/webservice/soap/server.php?wsdl=1&wstoken=<token>
+
 ### Alerts
 
 This plugin allows Moodle to push messages as campusM alerts.
